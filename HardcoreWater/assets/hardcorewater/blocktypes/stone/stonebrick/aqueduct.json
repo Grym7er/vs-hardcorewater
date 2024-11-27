@@ -7,6 +7,10 @@
 			"groupBy": [
 				"aqueduct-*"
 			]
+		},
+		"liquidBarrierOnSidesByType": {
+			"*-ns": [ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0],
+			"*-we": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0]
 		}
 	},
 	"behaviors": [

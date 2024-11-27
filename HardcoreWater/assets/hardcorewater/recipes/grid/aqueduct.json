@@ -1,5 +1,5 @@
 {
-  "ingredientPattern": "LCL,LLL",
+  "ingredientPattern": "LCL,_L_",
   "ingredients": {
     "C": {
       "type": "item",
@@ -17,6 +17,6 @@
   "output": {
     "type": "block",
     "code": "hardcorewater:aqueduct-{rock}-ns",
-    "quantity": 4
+    "quantity": 3
   }
 }

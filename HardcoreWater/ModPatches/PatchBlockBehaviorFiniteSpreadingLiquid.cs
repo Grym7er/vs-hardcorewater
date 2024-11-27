@@ -34,6 +34,6 @@ namespace AdditionalSpawnConstraints.ModPatches
 
             return true; // resume original method
 		}
-	}
+    }
 }
     
