@@ -1,22 +1,20 @@
-Hardcore Water
+Hardcore Water : Transport Edition
 =================
 
 Overview
 --------
 
-This mod prevents source blocks of water being placed using buckets. This means that:
+Originally, this mode prevented water from being placed by buckets; now that source bucket prevention is a vanilla world option with VS 1.20.x, this mod is more focused on transportation methods to move water around.
 
- * Water must be transported to needed locations by player-built aqueducts and gravity.
+This mod currently adds:
 
- * Source blocks of water from world generation are much more valuable, and cannot be replaced when removed.
-
- * Any mod that add a water wheel as a source for mechanical power will better balanced with wind power, as you cannot place a source block of water adjacent to a water wheel for free, easy power.
+ * Aqueduct sections, made with bricks and mortar. One section must be connected to a source block to propagate water along a lenght of sections.
 
 
 Config Settings (`VintageStoryData/ModConfig/HardcoreWater.json`)
 --------
 
-None, at the moment...
+ * `AqueductUpdateFrequencySeconds`: Sets how often aqueducts are allowed to update; defaults to `0.5`.
 
 
 Future Plans
@@ -28,4 +26,5 @@ Future Plans
 Known Issues
 --------
 
- * Water placed from a bucket does not flow; this might require some coding to fix/update during placement.
+ * Visual glitches can sometimes occur when adjacent to filled aqueducts and the camera is turned.
+ * Water will not flow out of an aqueduct section downwards unless blocks are placed at least one side of the section.

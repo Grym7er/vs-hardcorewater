@@ -6,6 +6,5 @@ namespace HardcoreWater.ModNetwork
     public class SyncConfigClientPacket
     {
         public float AqueductUpdateFrequencySeconds;
-        public int AqueductMaxDistanceFromWaterSourceBlocks;
     }
 }

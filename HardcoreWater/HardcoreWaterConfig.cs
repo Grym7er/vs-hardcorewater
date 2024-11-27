@@ -11,7 +11,5 @@ namespace HardcoreWater
         public static HardcoreWaterConfig Loaded { get; set; } = new HardcoreWaterConfig();
 
         public float AqueductUpdateFrequencySeconds { get; set; } = 0.5f;
-
-        public int AqueductMaxDistanceFromWaterSourceBlocks { get; set; } = 32;
     }
 }
