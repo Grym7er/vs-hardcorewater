@@ -8,13 +8,15 @@ Originally, this mode prevented water from being placed by buckets; now that sou
 
 This mod currently adds:
 
- * Aqueduct sections, made with bricks and mortar. One section must be connected to a source block to propagate water along a lenght of sections.
+ * Aqueduct sections, made with bricks and mortar. One section must be connected to a source block to propagate water along a length of sections.
+
+Note that aqueducts can feed other aqueducts when placed orthogonal to each other, but only one-way. The source aqueduct in this arragement will have smaller openings.
 
 
 Config Settings (`VintageStoryData/ModConfig/HardcoreWater.json`)
 --------
 
- * `AqueductUpdateFrequencySeconds`: Sets how often aqueducts are allowed to update; defaults to `0.5`.
+ * `AqueductUpdateFrequencySeconds`: Sets how often aqueducts are allowed to update, in seconds; defaults to `0.75`.
 
 
 Future Plans
@@ -27,4 +29,4 @@ Known Issues
 --------
 
  * Visual glitches can sometimes occur when adjacent to filled aqueducts and the camera is turned.
- * Water will not flow out of an aqueduct section downwards unless blocks are placed at least one side of the section.
+ * Water will not flow out of an aqueduct section downwards unless a full block is placed below the end section.
