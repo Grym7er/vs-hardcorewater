@@ -2,22 +2,30 @@
 	"code": "aqueduct",
 	"class": "BlockAqueduct",
 	"entityClass": "BlockEntityAqueduct",
+	"drops": [
+		{
+			"type": "block",
+			"code": "aqueduct-{rock}-none-ns",
+			"quantity": { "avg": 1 }
+		}
+	],
 	"attributes": {
 		"handbook": {
 			"groupBy": [
-				"aqueduct-*"
+				"aqueduct-{rock}-none-*"
 			]
 		},
 		"liquidBarrierOnSidesByType": {
-			"*-ns": [ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0],
-			"*-we": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0]
+			"*-none-ns": [ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 ],
+			"*-e-ns": [ 0.0, 0.0, 0.0, 1.0, 0.0, 1.0 ],
+			"*-w-ns": [ 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ],
+			"*-we-ns": [ 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
+			"*-none-we": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0 ],
+			"*-n-we": [ 0.0, 0.0, 1.0, 0.0, 0.0, 1.0 ],
+			"*-s-we": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
+			"*-ns-we": [ 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ]
 		}
 	},
-	"behaviors": [
-		{
-			"name": "NWOrientable"
-		}
-	],
 	"variantgroups": [
 		{
 			"code": "rock",
@@ -26,6 +34,18 @@
 				"sandstone",
 				"basalt",
 				"granite"
+			]
+		},
+		{
+			"code": "connections",
+			"states": [
+				"none",
+				"n",
+				"s",
+				"e",
+				"w",
+				"ns",
+				"we"
 			]
 		},
 		{
@@ -38,25 +58,49 @@
 	],
 	"creativeinventory": {
 		"general": [
-			"*-ns"
+			"*-none-ns"
 		],
 		"terrain": [
-			"*-ns"
+			"*-none-ns"
 		]
 	},
 	"shapeByType": {
-		"*-ns": {
-			"base": "block/stone/stonebrick/aqueduct",
+		"*-none-ns": {
+			"base": "block/stone/stonebrick/aqueduct_ns",
 			"rotateY": 0
 		},
-		"*-we": {
-			"base": "block/stone/stonebrick/aqueduct",
+		"*-w-ns": {
+			"base": "block/stone/stonebrick/aqueduct_nes",
+			"rotateY": 180
+		},
+		"*-we-ns": {
+			"base": "block/stone/stonebrick/aqueduct_nesw",
+			"rotateY": 0
+		},
+		"*-e-ns": {
+			"base": "block/stone/stonebrick/aqueduct_nes",
+			"rotateY": 0
+		},
+		"*-none-we": {
+			"base": "block/stone/stonebrick/aqueduct_ns",
+			"rotateY": 90
+		},
+		"*-s-we": {
+			"base": "block/stone/stonebrick/aqueduct_nes",
+			"rotateY": 270
+		},
+		"*-n-we": {
+			"base": "block/stone/stonebrick/aqueduct_nes",
+			"rotateY": 90
+		},
+		"*-ns-we": {
+			"base": "block/stone/stonebrick/aqueduct_nesw",
 			"rotateY": 90
 		}
 	},
 	"blockmaterial": "Stone",
 	"sideOpaqueByType": {
-		"*-ns": {
+		"*-none-ns": {
 			"up": false,
 			"down": true,
 			"north": false,
@@ -64,17 +108,65 @@
 			"west": true,
 			"east": true
 		},
-		"*-we": {
+		"*-w-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": true
+		},
+		"*-e-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": false
+		},
+		"*-we-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-none-we": {
 			"up": false,
 			"down": true,
 			"north": true,
 			"south": true,
 			"west": false,
 			"east": false
+		},
+		"*-s-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-n-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-ns-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
 		}
 	},
 	"sideSolidByType": {
-		"*-ns": {
+		"*-none-ns": {
 			"up": false,
 			"down": true,
 			"north": false,
@@ -82,11 +174,59 @@
 			"west": true,
 			"east": true
 		},
-		"*-we": {
+		"*-w-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": true
+		},
+		"*-e-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": false
+		},
+		"*-we-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-none-we": {
 			"up": false,
 			"down": true,
 			"north": true,
 			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-s-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-n-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-ns-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
 			"west": false,
 			"east": false
 		}

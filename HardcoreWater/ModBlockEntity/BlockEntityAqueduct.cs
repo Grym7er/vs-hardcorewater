@@ -52,8 +52,11 @@ namespace HardcoreWater.ModBlockEntity
 		{
 			BlockPos[] blockPosFB = new BlockPos[2];
 
+            if (this.blockAqueduct == null)
+                return;
+
 			// Scan blocks front and back of the aqueduct
-			if (this.blockAqueduct.Orientation == "ns")
+			if (BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation) == BlockFacing.NORTH)
             {
 				blockPosFB[0] = this.Pos.NorthCopy();
 				blockPosFB[1] = this.Pos.SouthCopy();
@@ -68,40 +71,49 @@ namespace HardcoreWater.ModBlockEntity
 			if (this.WaterSourcePos != null)
 			{
 				bool hasSource = false;
-                if (IsValidWaterSource(this.WaterSourcePos))
+                if (IsValidWaterSource(this.WaterSourcePos) || this.Api.World.BlockAccessor.GetChunkAtBlockPos(this.WaterSourcePos) == null)
                 {
-                    hasSource = true; // Connected to source block
+                    hasSource = true; // Connected to source block or source block is in unloaded chunk
                 }
-                else if (IsValidWaterFall(this.WaterSourcePos))
+                else if (IsValidWaterFall(this.WaterSourcePos) || this.Api.World.BlockAccessor.GetChunkAtBlockPos(this.WaterSourcePos) == null)
 				{
-                    hasSource = true; // Connected to waterfall
+                    hasSource = true; // Connected to waterfall or source block is in unloaded chunk
                 } 
-                else if (IsValidFilledAqueduct(this.WaterSourcePos, 6))
+                else if (IsValidFilledAqueduct(this.WaterSourcePos, 6) || this.Api.World.BlockAccessor.GetChunkAtBlockPos(this.WaterSourcePos) == null)
 				{
-                    hasSource = true; // Connected to aqueduct that isn't using this one as a source and has valid water source
+                    hasSource = true; // Connected to aqueduct that isn't using this one as a source and has valid water source or source block is in unloaded chunk
                 }
 
 				if (!hasSource)
 				{
-                    this.lastWaterSourceId = 0;
+                    this.WaterSourceReacquireTimeout = 4;
                     this.WaterSourcePos = null;
 					this.MarkDirty(true);
 				}
                 else
                 {
                     // Check that water block id didnt change; this workaround prevents waterfalls from making forever filled aqueduct channels
-                    int currentWaterSourceId = this.Api.World.BlockAccessor.GetBlock(this.WaterSourcePos, BlockLayersAccess.Fluid).Id;
-                    if (this.lastWaterSourceId != 0 && lastWaterSourceId != currentWaterSourceId)
-                    {
-                        this.lastWaterSourceId = 0;
-                        this.WaterSourcePos = null;
-                        this.MarkDirty(true);
-                    }
-                    this.lastWaterSourceId = currentWaterSourceId;
+                    //int currentWaterSourceId = this.Api.World.BlockAccessor.GetBlock(this.WaterSourcePos, BlockLayersAccess.Fluid).Id;
+                    //if (this.lastWaterSourceId != 0 && lastWaterSourceId != currentWaterSourceId)
+                    //{
+                    //    this.lastWaterSourceId = 0;
+                    //    this.WaterSourcePos = null;
+                    //    this.MarkDirty(true);
+                    //}
+                    //this.lastWaterSourceId = currentWaterSourceId;
                 }
 			}
 			else
 			{
+                if (WaterSourceReacquireTimeout > 1)
+                {
+                    --WaterSourceReacquireTimeout;
+                    this.WaterLevel = Math.Max(0, this.WaterLevel - 1);
+                    this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
+                    this.MarkDirty(true);
+                    return;
+                }
+
                 bool hasSource = false;
                 foreach (BlockPos endPos in blockPosFB)
                 {
@@ -175,7 +187,7 @@ namespace HardcoreWater.ModBlockEntity
 		{
 			base.ToTreeAttributes(tree);
 			tree.SetInt("WaterLevel", this.WaterLevel);
-            tree.SetInt("lastWaterSourceId", this.lastWaterSourceId);
+            tree.SetInt("WaterSourceReacquireTimeout", this.WaterSourceReacquireTimeout);
 			if (this.WaterSourcePos != null)
 				tree.SetBlockPos("WaterSourcePos", this.WaterSourcePos);
 		}
@@ -184,7 +196,7 @@ namespace HardcoreWater.ModBlockEntity
 		{
 			base.FromTreeAttributes(tree, worldAccessForResolve);
 			this.WaterLevel = tree.GetInt("WaterLevel");
-            this.lastWaterSourceId = tree.GetInt("lastWaterSourceId", 0);
+            this.WaterSourceReacquireTimeout = tree.GetInt("WaterSourceReacquireTimeout", 0);
             this.WaterSourcePos = tree.GetBlockPos("WaterSourcePos", null);
         }
 
@@ -194,6 +206,6 @@ namespace HardcoreWater.ModBlockEntity
 
 		public BlockPos WaterSourcePos { get; set; } = null;
 
-        private int lastWaterSourceId = 0;
+        private int WaterSourceReacquireTimeout = 0;
 	}
 }

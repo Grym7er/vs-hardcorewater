@@ -2,6 +2,8 @@
 
 - Fixed aqueducts recipe
 - Allowed aqueducts to fill from above waterfall
+- Fixed aqueduct constant updating
+- Added feed connectors to models when aqueducts are connected to them
 
 ### v1.20.x-1.1.0
 
