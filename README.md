@@ -4,13 +4,13 @@ Hardcore Water : Transport Edition
 Overview
 --------
 
-Originally, this mode prevented water from being placed by buckets; now that source bucket prevention is a vanilla world option with VS 1.20.x, this mod is more focused on transportation methods to move water around.
+Originally, this mod prevented water from being placed by buckets; now that source bucket prevention is a vanilla world option with VS 1.20.x, this mod is more focused on transportation methods to move water around.
 
 This mod currently adds:
 
  * Aqueduct sections, made with bricks and mortar. One section must be connected to a source block to propagate water along a length of sections.
 
-Note that aqueducts can feed other aqueducts when placed orthogonal to each other, but only one-way. The source aqueduct in this arragement will have smaller openings.
+Note that aqueducts can feed other aqueducts when placed orthogonal to each other, but only one-way. The source aqueduct in this arrangement will have smaller openings.
 
 
 Config Settings (`VintageStoryData/ModConfig/HardcoreWater.json`)
