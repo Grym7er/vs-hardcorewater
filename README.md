@@ -9,6 +9,7 @@ Originally, this mod prevented water from being placed by buckets; now that sour
 This mod currently adds:
 
  * Aqueduct sections, made with bricks and mortar. One section must be connected to a source block to propagate water along a length of sections.
+   * Enclosed aqueducts which cannot feed aqueducts from the side, but can be used in room walls without affecting room integrity. Greenhouse-friendly.
 
 Note that aqueducts can feed other aqueducts when placed orthogonal to each other, but only one-way. The source aqueduct in this arrangement will have smaller openings.
 
