@@ -20,7 +20,7 @@ namespace AdditionalSpawnConstraints.ModPatches
 		{
             Block ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
 
-            if (ourSolid is BlockAqueduct blockAqueduct)
+            if (ourSolid is IAqueduct aqueduct)
             {
                 if (ourBlock.GetBlockEntity<BlockEntityAqueduct>(pos) is BlockEntityAqueduct blockEntityAqueduct)
                 {

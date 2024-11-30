@@ -9,17 +9,19 @@ using Vintagestory.GameContent;
 
 namespace HardcoreWater.ModBlock
 {
-	public class BlockAqueduct : Block
-	{
-		public string Orientation
-		{
-			get
-			{
-				return this.Variant["orientation"];
-			}
-		}
+	public class BlockAqueduct : Block, IAqueduct
+    {
+        public string Orientation
+        {
+            get
+            {
+                return this.Variant["orientation"];
+            }
+        }
 
-		public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
+        public bool IsEnclosed => false;
+
+        public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
 		{
 			base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
 
@@ -35,7 +37,7 @@ namespace HardcoreWater.ModBlock
         private string GetAqueductCodes(IWorldAccessor world, BlockPos pos, BlockFacing facing)
         {
             BlockPos blockPosOffset = pos.Copy().Offset(facing);
-            if (world.BlockAccessor.GetBlock(blockPosOffset) is BlockAqueduct blockAqueduct)
+            if (world.BlockAccessor.GetBlock(blockPosOffset) is IAqueduct blockAqueduct)
             {
                 if (BlockFacing.FromFirstLetter(blockAqueduct.Orientation[0]) == facing || BlockFacing.FromFirstLetter(blockAqueduct.Orientation[1]) == facing)
                 return facing.Code[0].ToString() ?? "";

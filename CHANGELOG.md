@@ -1,3 +1,9 @@
+### v1.20.x-1.2.0
+
+- Added enclosed aqueduct sections that do not affect room integrity
+- Fixed collision boxes for aqueduct sections
+- Changed aqueducts to not consider enclosed sections as sources from the enclosed sides
+
 ### v1.20.x-1.1.1
 
 - Fixed aqueducts recipe

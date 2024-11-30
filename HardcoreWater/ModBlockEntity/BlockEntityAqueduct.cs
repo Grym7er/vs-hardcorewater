@@ -40,9 +40,11 @@ namespace HardcoreWater.ModBlockEntity
 
         private bool IsValidFilledAqueduct(BlockPos blockPos, int minLevel = 7)
         {
-            if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct)
+            if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct && this.Api.World.BlockAccessor.GetBlock(blockPos) is IAqueduct aqueduct)
             {
-                return adjacentAqueduct.WaterSourcePos != null && adjacentAqueduct.WaterSourcePos != this.WaterSourcePos && adjacentAqueduct.WaterLevel >= minLevel;
+                // To be a valid source aqueduct for this one, the adjacent aqueduct must be oriented in the same direction OR not enclosed
+                bool validSource = aqueduct.Orientation == this.blockAqueduct.Orientation || !aqueduct.IsEnclosed;
+                return validSource && adjacentAqueduct.WaterSourcePos != null && adjacentAqueduct.WaterSourcePos != this.WaterSourcePos && adjacentAqueduct.WaterLevel >= minLevel;
             }
 
             return false;
@@ -179,7 +181,7 @@ namespace HardcoreWater.ModBlockEntity
 		public override void Initialize(ICoreAPI api)
 		{
 			base.Initialize(api);
-			this.blockAqueduct = (base.Block as BlockAqueduct);
+			this.blockAqueduct = (base.Block as IAqueduct);
 			this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int) Math.Round(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds * 1000), 0);
 		}
 
@@ -200,7 +202,7 @@ namespace HardcoreWater.ModBlockEntity
             this.WaterSourcePos = tree.GetBlockPos("WaterSourcePos", null);
         }
 
-		private BlockAqueduct blockAqueduct;
+		private IAqueduct blockAqueduct;
 
 		public int WaterLevel { get; set; } = 0;
 

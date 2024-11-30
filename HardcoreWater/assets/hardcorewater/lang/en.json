@@ -5,5 +5,10 @@
   "block-aqueduct-limestone*": "Limestone aqueduct section",
   "block-aqueduct-sandstone*": "Sandstone aqueduct section",
   "block-aqueduct-basalt*": "Basalt aqueduct section",
-  "block-aqueduct-granite*": "Granite aqueduct section"
+  "block-aqueduct-granite*": "Granite aqueduct section",
+
+  "block-enclosedaqueduct-limestone*": "Limestone enclosed aqueduct section",
+  "block-enclosedaqueduct-sandstone*": "Sandstone enclosed aqueduct section",
+  "block-enclosedaqueduct-basalt*": "Basalt enclosed aqueduct section",
+  "block-enclosedaqueduct-granite*": "Granite enclosed aqueduct section"
 }

@@ -1,0 +1,128 @@
+{
+	"code": "enclosedaqueduct",
+	"class": "BlockEnclosedAqueduct",
+	"entityClass": "BlockEntityAqueduct",
+	"drops": [
+		{
+			"type": "block",
+			"code": "enclosedaqueduct-{rock}-ns",
+			"quantity": { "avg": 1 }
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"groupBy": [
+				"enclosedaqueduct-{rock}-*"
+			]
+		},
+		"liquidBarrierOnSidesByType": {
+			"*-ns": [ 0.0, 1.0, 0.0, 1.0, 1.0, 1.0 ],
+			"*-we": [ 1.0, 0.0, 1.0, 0.0, 1.0, 1.0 ]
+		}
+	},
+	"variantgroups": [
+		{
+			"code": "rock",
+			"states": [
+				"limestone",
+				"sandstone",
+				"basalt",
+				"granite"
+			]
+		},
+		{
+			"code": "orientation",
+			"states": [
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-ns"
+		],
+		"terrain": [
+			"*-ns"
+		]
+	},
+	"shapeByType": {
+		"*-ns": {
+			"base": "block/stone/stonebrick/aqueduct_enclosed_ns",
+			"rotateY": 0
+		},
+		"*-we": {
+			"base": "block/stone/stonebrick/aqueduct_enclosed_ns",
+			"rotateY": 90
+		}
+	},
+	"blockmaterial": "Stone",
+	"sideOpaqueByType": {
+		"*-none-ns": {
+			"up": true,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
+		"*-none-we": {
+			"up": true,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		}
+	},
+	"sideSolidByType": {
+		"*-ns": {
+			"up": true,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": true,
+			"east": true
+		},
+		"*-we": {
+			"up": true,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		}
+	},
+	"replaceable": 200,
+	"resistance": 4,
+	"lightAbsorption": 99,
+	"textures": {
+		"all": {
+			"base": "game:block/stone/brick/{rock}*"
+		}
+	},
+	"sounds": {
+		"walk": "game:walk/stone",
+		"byTool": {
+			"Pickaxe": {
+				"hit": "game:block/rock-hit-pickaxe",
+				"break": "game:block/rock-break-pickaxe"
+			}
+		}
+	},
+	"heldTpIdleAnimation": "holdbothhandslarge",
+	"heldTpUseAnimation": "twohandplaceblock",
+	"tpHandTransform": {
+		"translation": {
+			"x": -1.23,
+			"y": -0.91,
+			"z": -0.8
+		},
+		"rotation": {
+			"x": -2,
+			"y": 25,
+			"z": -78
+		},
+		"scale": 0.4
+	}
+}
