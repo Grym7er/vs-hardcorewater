@@ -1,0 +1,33 @@
+{
+  "ingredientPattern": "HC_,RLR",
+  "ingredients": {
+    "H": {
+      "type": "item",
+      "code": "game:hammer-*",
+      "isTool": true,
+      "toolDurabilityCost": 40
+    },
+    "C": {
+      "type": "item",
+      "code": "game:chisel-*",
+      "isTool": true,
+      "toolDurabilityCost": 20
+    },
+    "L": {
+      "type": "block",
+      "code": "game:debarkedlog-*-ud",
+      "name": "wood"
+    },
+    "R": {
+      "type": "item",
+      "code": "game:resin"
+    }
+  },
+  "width": 3,
+  "height": 2,
+  "output": {
+    "type": "block",
+    "code": "hardcorewater:aqueduct-{wood}-none-ns",
+    "quantity": 1
+  }
+}

@@ -8,7 +8,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"all": "game:block/stone/brick/limestone1"
+		"all": "block/stone/brick/limestone1"
 	},
 	"elements": [
 		{
@@ -17,12 +17,12 @@
 			"to": [ 16.0, 3.1, 16.0 ],
 			"rotationOrigin": [ 0.3, 0.0, 0.0 ],
 			"faces": {
-				"north": { "texture": "#all", "uv": [ 0.0, 0.0, 15.5, 3.0 ], "autoUv": false },
-				"east": { "texture": "#all", "uv": [ 0.0, 0.0, 16.0, 3.0 ] },
-				"south": { "texture": "#all", "uv": [ 0.0, 0.0, 15.5, 3.0 ], "autoUv": false },
-				"west": { "texture": "#all", "uv": [ 0.0, 0.0, 16.0, 3.0 ] },
-				"up": { "texture": "#all", "uv": [ 0.0, 0.0, 15.5, 16.0 ], "autoUv": false },
-				"down": { "texture": "#all", "uv": [ 0.0, 0.0, 15.5, 16.0 ], "autoUv": false }
+				"north": { "texture": "#all", "uv": [ 0.0, 13.0, 16.0, 16.0 ], "autoUv": false },
+				"east": { "texture": "#all", "uv": [ 0.0, 13.0, 16.0, 16.0 ] },
+				"south": { "texture": "#all", "uv": [ 0.0, 13.0, 16.0, 16.0 ], "autoUv": false },
+				"west": { "texture": "#all", "uv": [ 0.0, 13.0, 16.0, 16.0 ] },
+				"up": { "texture": "#all", "uv": [ 0.0, 0.0, 16.0, 16.0 ], "autoUv": false },
+				"down": { "texture": "#all", "uv": [ 0.0, 0.0, 16.0, 16.0 ], "autoUv": false }
 			}
 		},
 		{

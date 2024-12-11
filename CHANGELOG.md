@@ -1,3 +1,8 @@
+### v1.20.x-1.3.0
+
+- Added wooden aqueducts
+- Fixed UVs of stone aqueducts
+
 ### v1.20.x-1.2.0
 
 - Added enclosed aqueduct sections that do not affect room integrity

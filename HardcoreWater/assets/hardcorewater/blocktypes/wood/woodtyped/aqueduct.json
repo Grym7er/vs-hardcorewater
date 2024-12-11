@@ -1,0 +1,323 @@
+{
+	"code": "aqueduct",
+	"class": "BlockAqueduct",
+	"entityClass": "BlockEntityAqueduct",
+	"drops": [
+		{
+			"type": "block",
+			"code": "aqueduct-{wood}-none-ns",
+			"quantity": { "avg": 1 }
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"groupBy": [
+				"aqueduct-{wood}-none-*"
+			]
+		},
+		"liquidBarrierOnSidesByType": {
+			"*-none-ns": [ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 ],
+			"*-e-ns": [ 0.0, 0.0, 0.0, 1.0, 0.0, 1.0 ],
+			"*-w-ns": [ 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ],
+			"*-we-ns": [ 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
+			"*-none-we": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0 ],
+			"*-n-we": [ 0.0, 0.0, 1.0, 0.0, 0.0, 1.0 ],
+			"*-s-we": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
+			"*-ns-we": [ 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ]
+		}
+	},
+	"variantgroups": [
+		{
+			"code": "wood",
+			"states": [
+				"aged",
+				"veryaged",
+				"veryagedrotten"
+			],
+			"loadFromPropertiesCombine": [ "game:block/wood" ]
+		},
+		{
+			"code": "connections",
+			"states": [
+				"none",
+				"n",
+				"s",
+				"e",
+				"w",
+				"ns",
+				"we"
+			]
+		},
+		{
+			"code": "orientation",
+			"states": [
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-none-ns"
+		],
+		"terrain": [
+			"*-none-ns"
+		]
+	},
+	"shapeByType": {
+		"*-none-ns": {
+			"base": "block/wood/aqueduct_ns",
+			"rotateY": 0
+		},
+		"*-w-ns": {
+			"base": "block/wood/aqueduct_nes",
+			"rotateY": 180
+		},
+		"*-we-ns": {
+			"base": "block/wood/aqueduct_nesw",
+			"rotateY": 0
+		},
+		"*-e-ns": {
+			"base": "block/wood/aqueduct_nes",
+			"rotateY": 0
+		},
+		"*-none-we": {
+			"base": "block/wood/aqueduct_ns",
+			"rotateY": 90
+		},
+		"*-s-we": {
+			"base": "block/wood/aqueduct_nes",
+			"rotateY": 270
+		},
+		"*-n-we": {
+			"base": "block/wood/aqueduct_nes",
+			"rotateY": 90
+		},
+		"*-ns-we": {
+			"base": "block/wood/aqueduct_nesw",
+			"rotateY": 90
+		}
+	},
+	"blockmaterial": "Wood",
+	"sideOpaqueByType": {
+		"*-none-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
+		"*-w-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": true
+		},
+		"*-e-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": false
+		},
+		"*-we-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-s-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-n-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-ns-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
+		}
+	},
+	"sideSolidByType": {
+		"*-none-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
+		"*-w-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": true
+		},
+		"*-e-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": false
+		},
+		"*-we-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-s-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": false,
+			"west": false,
+			"east": false
+		},
+		"*-n-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-ns-we": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": false,
+			"east": false
+		}
+	},
+	"collisionSelectionBoxesByType": {
+		"*-ns": [
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 0.18,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.82,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.0,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 0.18,
+				"z2": 1.0
+			}
+		],
+		"*-we": [
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 0.18
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.82,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.0,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 0.18,
+				"z2": 1.0
+			}
+		]
+	},
+	"replaceable": 200,
+	"resistance": 4,
+	"lightAbsorption": 99,
+	"textures": {
+		"all": {
+			"base": "game:block/wood/debarked/{wood}"
+		}
+	},
+	"sounds": {
+		"place": "game:block/planks",
+		"walk": "game:walk/wood",
+		"hit": "game:block/planks",
+		"break": "game:block/planks",
+		"byTool": {
+			"Axe": {
+				"hit": "game:block/chop",
+				"break": "game:block/planks"
+			}
+		}
+	},
+	"heldTpIdleAnimation": "holdbothhandslarge",
+	"heldTpUseAnimation": "twohandplaceblock",
+	"tpHandTransform": {
+		"translation": {
+			"x": -1.23,
+			"y": -0.91,
+			"z": -0.8
+		},
+		"rotation": {
+			"x": -2,
+			"y": 25,
+			"z": -78
+		},
+		"scale": 0.4
+	}
+}
