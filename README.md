@@ -33,3 +33,4 @@ Known Issues
 
 * Visual glitches can sometimes occur when adjacent to filled aqueducts and the camera is turned.
 * Water will not flow out of an aqueduct section downwards unless a full block is placed below the end section.
+* No compatibility yet with Wildcraft Trees.
