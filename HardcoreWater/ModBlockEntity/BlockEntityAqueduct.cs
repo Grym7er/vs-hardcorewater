@@ -16,6 +16,7 @@ namespace HardcoreWater.ModBlockEntity
 	{
 		private bool IsValidWaterSource(BlockPos blockPos, int minLevel = 7)
         {
+            Block block = this.Api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
             if (this.Api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid) is BlockWaterflowing blockWaterflowing)
             {
                 return (blockWaterflowing.LiquidLevel >= minLevel);
@@ -23,7 +24,7 @@ namespace HardcoreWater.ModBlockEntity
             if (this.Api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid) is BlockWater blockWater)
 			{
                 return blockWater.LiquidLevel >= minLevel;
-			} 
+			}
 
             return false;
 		}
@@ -32,7 +33,7 @@ namespace HardcoreWater.ModBlockEntity
         {
             if (this.Api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid) is BlockWaterfall blockWaterfall)
             {
-                return (blockWaterfall.LiquidLevel == 6 && blockWaterfall.Variant["flow"] == "d");
+                return (blockWaterfall.LiquidLevel >= 6 && blockWaterfall.Variant["flow"] == "d");
             }
 
             return false;
@@ -40,15 +41,44 @@ namespace HardcoreWater.ModBlockEntity
 
         private bool IsValidFilledAqueduct(BlockPos blockPos, int minLevel = 7)
         {
-            if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct && this.Api.World.BlockAccessor.GetBlock(blockPos) is IAqueduct aqueduct)
+            
+            if (this.Api.World.BlockAccessor.GetBlock(blockPos) is IAqueduct aqueduct)
             {
-                // To be a valid source aqueduct for this one, the adjacent aqueduct must be oriented in the same direction OR not enclosed
-                bool validSource = aqueduct.Orientation == this.blockAqueduct.Orientation || !aqueduct.IsEnclosed;
-                return validSource && adjacentAqueduct.WaterSourcePos != null && adjacentAqueduct.WaterSourcePos != this.WaterSourcePos && adjacentAqueduct.WaterLevel >= minLevel;
+                if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct)
+                {
+                    // To be a valid source aqueduct for this one, the adjacent aqueduct must be oriented in the same direction OR not enclosed
+                    bool correctOrientation = aqueduct.Orientation == this.blockAqueduct.Orientation || !aqueduct.IsEnclosed;
+                    bool notSourcingThis = adjacentAqueduct.WaterSourcePos != this.WaterSourcePos;
+                    //bool hasMinWater = adjacentAqueduct.WaterLevel >= minLevel || adjacentAqueduct.Block.LiquidLevel >= minLevel;
+                    bool hasMinWater = adjacentAqueduct.HasWaterSource;
+                    bool isValid = correctOrientation && notSourcingThis && hasMinWater;
+                    return isValid;
+                }
+                else
+                {
+                    // Sometimes block entity will return null while block is aqueduct; assume valid source
+                    return true;
+                }
+            }
+            
+            return false;
+		}
+
+        private bool HasInvalidSourceDependency(BlockPos posA, BlockPos posB)
+        {
+            // Check for case that aqueduct is valid source for two adjacent aqueducts, invalidate if so
+            if (this.Api.World.BlockAccessor.GetBlockEntity(posA) is BlockEntityAqueduct entityAqueductA && this.Api.World.BlockAccessor.GetBlockEntity(posB) is BlockEntityAqueduct entityAqueductB)
+            {
+                bool sourcesBothAdjacent = (entityAqueductA.WaterSourcePos == this.Pos && entityAqueductB.WaterSourcePos == this.Pos);
+                bool sourcedFromEitherAdjacent = (this.WaterSourcePos == entityAqueductA.Pos || this.WaterSourcePos == entityAqueductB.Pos);
+                if (sourcesBothAdjacent && sourcedFromEitherAdjacent)
+                {
+                    return true;
+                }
             }
 
             return false;
-		}
+        }
 
 		private void onServerTick1s(float dt)
 		{
@@ -70,7 +100,8 @@ namespace HardcoreWater.ModBlockEntity
 			}
 
 			// Check validity of previous source location, if present
-			if (this.WaterSourcePos != null)
+			//if (this.WaterSourcePos != null)
+            if (this.HasWaterSource)
 			{
 				bool hasSource = false;
                 if (IsValidWaterSource(this.WaterSourcePos) || this.Api.World.BlockAccessor.GetChunkAtBlockPos(this.WaterSourcePos) == null)
@@ -86,28 +117,17 @@ namespace HardcoreWater.ModBlockEntity
                     hasSource = true; // Connected to aqueduct that isn't using this one as a source and has valid water source or source block is in unloaded chunk
                 }
 
-				if (!hasSource)
+				if (!hasSource || HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
 				{
                     this.WaterSourceReacquireTimeout = 4;
+                    this.HasWaterSource = false;
                     this.WaterSourcePos = null;
-					this.MarkDirty(true);
+                    this.MarkDirty(true);
 				}
-                else
-                {
-                    // Check that water block id didnt change; this workaround prevents waterfalls from making forever filled aqueduct channels
-                    //int currentWaterSourceId = this.Api.World.BlockAccessor.GetBlock(this.WaterSourcePos, BlockLayersAccess.Fluid).Id;
-                    //if (this.lastWaterSourceId != 0 && lastWaterSourceId != currentWaterSourceId)
-                    //{
-                    //    this.lastWaterSourceId = 0;
-                    //    this.WaterSourcePos = null;
-                    //    this.MarkDirty(true);
-                    //}
-                    //this.lastWaterSourceId = currentWaterSourceId;
-                }
 			}
 			else
 			{
-                if (WaterSourceReacquireTimeout > 1)
+                if (WaterSourceReacquireTimeout > 0)
                 {
                     --WaterSourceReacquireTimeout;
                     this.WaterLevel = Math.Max(0, this.WaterLevel - 1);
@@ -117,54 +137,82 @@ namespace HardcoreWater.ModBlockEntity
                 }
 
                 bool hasSource = false;
-                foreach (BlockPos endPos in blockPosFB)
+                BlockPos upwardPos = this.Pos.UpCopy();
+                if (IsValidWaterSource(upwardPos))
                 {
-                    if (IsValidWaterSource(endPos))
+                    this.WaterSourcePos = upwardPos;
+                    this.WaterLevel = 6;
+                    hasSource = true;
+                    this.HasWaterSource = true;
+                    // Connected to source block above
+                }
+                else if (IsValidWaterFall(upwardPos))
+                {
+                    this.WaterSourcePos = upwardPos;
+                    this.WaterLevel = 6;
+                    hasSource = true;
+                    this.HasWaterSource = true;
+                    // Connected to waterfall above
+                }
+                else if (IsValidFilledAqueduct(upwardPos, 6))
+                {
+                    this.WaterSourcePos = upwardPos;
+                    this.WaterLevel = 6;
+                    hasSource = true;
+                    this.HasWaterSource = true;
+                    // Connected to aqueduct above
+                }
+
+                if (!hasSource) // Check ends if no source above
+                {
+                    foreach (BlockPos endPos in blockPosFB)
                     {
-                        this.WaterSourcePos = endPos;
-                        this.WaterLevel = 6;
-                        hasSource = true;
-                        break; // Connected to source block
-                    }
-                    else if (IsValidWaterSource(this.Pos.UpCopy()))
-                    {
-                        this.WaterSourcePos = this.Pos.UpCopy();
-                        this.WaterLevel = 6;
-                        hasSource = true;
-                        break; // Connected to source block above
-                    }
-                    else if (IsValidWaterFall(this.Pos.UpCopy()))
-                    {
-                        this.WaterSourcePos = this.Pos.UpCopy();
-                        this.WaterLevel = 6;
-                        hasSource = true;
-                        break; // Connected to waterfall above
-                    }
-                    else if (IsValidFilledAqueduct(this.Pos.UpCopy(), 6))
-                    {
-                        this.WaterSourcePos = this.Pos.UpCopy();
-                        this.WaterLevel = 6;
-                        hasSource = true;
-                        break; // Connected to aqueduct above
-                    }
-                    else if (IsValidFilledAqueduct(endPos, 6))
-                    {
-                        this.WaterSourcePos = endPos;
-                        this.WaterLevel = 6;
-                        hasSource = true;
-                        break; // Connected to aqueduct that isn't using this one as a source and has valid water source
+                        if (IsValidWaterSource(endPos))
+                        {
+                            this.WaterSourcePos = endPos;
+                            this.WaterLevel = 6;
+                            hasSource = true;
+                            this.HasWaterSource = true;
+                            break; // Connected to source block
+                        }
+                        else if (IsValidFilledAqueduct(endPos, 6))
+                        {
+                            this.WaterSourcePos = endPos;
+                            this.WaterLevel = 6;
+                            hasSource = true;
+                            this.HasWaterSource = true;
+                            break; // Connected to aqueduct that isn't using this one as a source and has valid water source
+                        }
                     }
                 }
+                
 
 				if (hasSource)
 				{
+                    // Handle fresh, salt, and boiling water separately, lest we desalinate or something else weird
                     Block ourBlockFluid = this.Api.World.BlockAccessor.GetBlock(this.Pos, BlockLayersAccess.Fluid);
-                    Block waterSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:water-still-7"));
-                    Block waterBlock = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + Math.Min(7, this.WaterLevel)));
-                    bool notIced = !ourBlockFluid.Code.Path.Contains("ice");
-                    if (notIced && ourBlockFluid != waterSourceBlock)
+                    Block liquidSourceBlock;
+                    Block liquidBlockToSet;
+                    if (ourBlockFluid != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
                     {
-                        this.Api.World.BlockAccessor.SetBlock(waterBlock.BlockId, this.Pos, BlockLayersAccess.Fluid);
+                        liquidSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-7"));
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-" + Math.Min(7, this.WaterLevel)));
+                    }
+                    else if (ourBlockFluid != null && ourBlockFluid.Code.BeginsWith("game", "boiling"))
+                    {
+                        liquidSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-7"));
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-" + Math.Min(7, this.WaterLevel)));
+                    }
+                    else
+                    {
+                        liquidSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:water-still-7"));
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + Math.Min(7, this.WaterLevel)));
+                    }
+
+                    bool notIced = !ourBlockFluid.Code.Path.Contains("ice");
+                    if (notIced && ourBlockFluid.LiquidLevel < this.WaterLevel && !HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
+                    {
+                        this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
                         this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
                         this.MarkDirty(true);
                     }
@@ -190,7 +238,8 @@ namespace HardcoreWater.ModBlockEntity
 			base.ToTreeAttributes(tree);
 			tree.SetInt("WaterLevel", this.WaterLevel);
             tree.SetInt("WaterSourceReacquireTimeout", this.WaterSourceReacquireTimeout);
-			if (this.WaterSourcePos != null)
+            tree.SetBool("HasWaterSource", this.HasWaterSource);
+			if (this.HasWaterSource)
 				tree.SetBlockPos("WaterSourcePos", this.WaterSourcePos);
 		}
 
@@ -199,6 +248,7 @@ namespace HardcoreWater.ModBlockEntity
 			base.FromTreeAttributes(tree, worldAccessForResolve);
 			this.WaterLevel = tree.GetInt("WaterLevel");
             this.WaterSourceReacquireTimeout = tree.GetInt("WaterSourceReacquireTimeout", 0);
+            this.HasWaterSource = tree.GetBool("HasWaterSource", true);
             this.WaterSourcePos = tree.GetBlockPos("WaterSourcePos", null);
         }
 
@@ -207,6 +257,8 @@ namespace HardcoreWater.ModBlockEntity
 		public int WaterLevel { get; set; } = 0;
 
 		public BlockPos WaterSourcePos { get; set; } = null;
+
+        public bool HasWaterSource { get; set; } = false;
 
         private int WaterSourceReacquireTimeout = 0;
 	}

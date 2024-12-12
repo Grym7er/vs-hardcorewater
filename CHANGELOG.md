@@ -2,6 +2,8 @@
 
 - Added wooden aqueducts
 - Fixed UVs of stone aqueducts
+- Fixed case where aqueducts had invalid source and did not update
+- Fixed aqueduct block entity getting deleted when block was changed due to adjacent aqueduct being placed 
 
 ### v1.20.x-1.2.0
 

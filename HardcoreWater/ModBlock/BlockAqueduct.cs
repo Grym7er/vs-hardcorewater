@@ -117,7 +117,7 @@ namespace HardcoreWater.ModBlock
             {
                 return;
             }
-            world.BlockAccessor.SetBlock(block.BlockId, pos);
+            world.BlockAccessor.ExchangeBlock(block.BlockId, pos); // ExchangeBlock so that block entity is preserved
             world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
         }
 
@@ -147,11 +147,12 @@ namespace HardcoreWater.ModBlock
 				}
 
 				StringBuilder dsc = new StringBuilder();
-				dsc.AppendLine(Lang.Get("Water Level: {0}, Source Position: {1}", new object[]
+				dsc.AppendLine(Lang.Get("Water Level: {0}, Source Position: {1}, Current Position: {2}", new object[]
 					{
 						blockEntityAqueduct.WaterLevel,
-						blockEntityAqueduct.WaterSourcePos != null ? blockEntityAqueduct.WaterSourcePos.ToString() : "none"
-					}));
+						blockEntityAqueduct.WaterSourcePos != null ? blockEntityAqueduct.WaterSourcePos.ToString() : "none",
+                        pos.ToString()
+                    }));
 				if (world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid) is Block block)
 				{
 					dsc.AppendLine(Lang.Get("Liquid: {0}", new object[]
