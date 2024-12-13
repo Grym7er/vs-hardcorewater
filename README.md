@@ -9,7 +9,7 @@ Originally, this mod prevented water from being placed by buckets; now that sour
 This mod currently adds:
 
 * Aqueduct sections
-  * Can be made with 3 bricks and 1 mortar (creates 3 sections), or a debarked log and 2 resin (creates 1 section, requires hammer and chisel).
+  * Can be made with 3 bricks and 1 mortar (creates 3 sections), or a debarked log and resin (creates 1 section, requires hammer and chisel).
   * One section must be connected to a source block to propagate water along a length of sections.
   * Enclosed aqueducts which cannot feed aqueducts from the side, but can be used in room walls without affecting room integrity. 
 

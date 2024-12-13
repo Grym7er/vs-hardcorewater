@@ -1,3 +1,7 @@
+### v1.20.x-1.3.1
+
+- Changed wooden aqueduct recipe to be slightly cheaper
+
 ### v1.20.x-1.3.0
 
 - Added wooden aqueducts

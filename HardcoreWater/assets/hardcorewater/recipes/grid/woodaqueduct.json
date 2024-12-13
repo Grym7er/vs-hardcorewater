@@ -1,5 +1,5 @@
 {
-  "ingredientPattern": "HC_,RLR",
+  "ingredientPattern": "HC,RL",
   "ingredients": {
     "H": {
       "type": "item",
@@ -23,7 +23,7 @@
       "code": "game:resin"
     }
   },
-  "width": 3,
+  "width": 2,
   "height": 2,
   "output": {
     "type": "block",
