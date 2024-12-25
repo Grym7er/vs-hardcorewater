@@ -58,7 +58,7 @@
 	},
 	"blockmaterial": "Stone",
 	"sideOpaqueByType": {
-		"*-none-ns": {
+		"*-ns": {
 			"up": true,
 			"down": true,
 			"north": false,
@@ -66,7 +66,7 @@
 			"west": true,
 			"east": true
 		},
-		"*-none-we": {
+		"*-we": {
 			"up": true,
 			"down": true,
 			"north": true,
@@ -89,8 +89,8 @@
 			"down": true,
 			"north": true,
 			"south": true,
-			"west": false,
-			"east": false
+			"west": true,
+			"east": true
 		}
 	},
 	"replaceable": 200,

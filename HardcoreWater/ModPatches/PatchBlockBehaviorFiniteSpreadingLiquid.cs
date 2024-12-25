@@ -24,7 +24,8 @@ namespace AdditionalSpawnConstraints.ModPatches
             {
                 if (ourBlock.GetBlockEntity<BlockEntityAqueduct>(pos) is BlockEntityAqueduct blockEntityAqueduct)
                 {
-                    if (ourBlock.LiquidLevel-1 <= blockEntityAqueduct.WaterLevel && blockEntityAqueduct.WaterSourcePos != null)
+                    // Add check to ignore liquid levels of 1, based on reports from Chronolegionnaire
+                    if (ourBlock.LiquidLevel != 1 && ourBlock.LiquidLevel-1 <= blockEntityAqueduct.WaterLevel && blockEntityAqueduct.HasWaterSource)
                     {
                         __result = false;
                         return false; // skip original method

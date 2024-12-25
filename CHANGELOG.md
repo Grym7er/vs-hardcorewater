@@ -1,3 +1,8 @@
+### v1.20.x-1.3.2
+
+- Fixed opaque/solid side issues with enclosed aqueducts
+- Change patch to `TryLoweringLiquidLevel` to also ignore water levels of 1, and use `HasWaterSource` instead of `WaterPos != null`
+
 ### v1.20.x-1.3.1
 
 - Changed wooden aqueduct recipe to be slightly cheaper
