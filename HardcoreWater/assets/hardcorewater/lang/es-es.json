@@ -1,0 +1,32 @@
+{
+  "_comentarios": "Traducido por C4BR3R4 || Versión del Mod: 1.3.2 || Fecha de la última modificación: 20250210 || Registro: http://c4br3r4.es/index.php?topic=1296.0 ",
+  "craftinginfo-aqueducts-title": "Mecánica de Mod ► Acueductos",
+  "craftinginfo-aqueducts-text": "<strong>Acueductos</strong><br><i>Los acueductos pueden utilizarse para transportar agua a grandes distancias.</i><br><br>Los tramos de <a href='handbooksearch://acueducto'>Acueducto</a> deben colocarse junto a una fuente de agua, con uno de los lados abiertos orientado hacia la fuente. Se pueden colocar más tramos, que crearán agua no procedente de la fuente, siempre que no se retire el bloque de la fuente original ni se desconecten los tramos de acueducto.",
+
+  "block-aqueduct-limestone*": "Acueducto de Piedra Caliza",
+  "block-aqueduct-sandstone*": "Acueducto de Arenisca",
+  "block-aqueduct-basalt*": "Acueducto de Basalto",
+  "block-aqueduct-granite*": "Acueducto de Granito",
+
+  "block-aqueduct-acacia*": "Acueducto de Acacia",
+  "block-aqueduct-aged*": "Acueducto de Madera Envejecida",
+  "block-aqueduct-baldcypress*": "Acueducto de Ciprés",
+  "block-aqueduct-birch*": "Acueducto de Abedul",
+  "block-aqueduct-ebony*": "Acueducto de Ébano",
+  "block-aqueduct-kapok*": "Acueducto de Ceiba",
+  "block-aqueduct-larch*": "Acueducto de Lárice",
+  "block-aqueduct-maple*": "Acueducto de Arce",
+  "block-aqueduct-mossy*": "Acueducto de Musgoso",
+  "block-aqueduct-oak*": "Acueducto de Roble",
+  "block-aqueduct-pine*": "Acueducto de Pino",
+  "block-aqueduct-purpleheart*": "Acueducto de Corazón Púrpura",
+  "block-aqueduct-redwood*": "Acueducto de Secuoya",
+  "block-aqueduct-veryagedrotten*": "Acueducto de Madera Podrida",
+  "block-aqueduct-veryaged*": "Acueducto de Madera Muy Envejecida",
+  "block-aqueduct-walnut*": "Acueducto de Nogal",
+
+  "block-enclosedaqueduct-limestone*": "Acueducto Cubierto de Piedra Caliza",
+  "block-enclosedaqueduct-sandstone*": "Acueducto Cubierto de Arenisca",
+  "block-enclosedaqueduct-basalt*": "Acueducto Cubierto de Basalto",
+  "block-enclosedaqueduct-granite*": "Acueducto Cubierto de Granito"
+}
