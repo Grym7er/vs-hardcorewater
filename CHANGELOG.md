@@ -1,3 +1,7 @@
+### v1.20.x-1.3.4
+
+- Fix disconnected aqueduct case staying filled
+
 ### v1.20.x-1.3.3
 
 - Fixed aqueduct end flow issues by patching FindDownwardPaths in BlockBehaviorFiniteSpreadingLiquid
