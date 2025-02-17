@@ -74,7 +74,9 @@ namespace HardcoreWater
 
 				PatchBlockBehaviorFiniteSpreadingLiquidTryLoweringLiquidLevel(sapi, harmonyInst);
 
-                PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(sapi, harmonyInst);
+                //PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(sapi, harmonyInst);
+
+                PatchBlockBehaviorFiniteSpreadingLiquidFindDownwardPaths(sapi, harmonyInst);
             }
 
             // Create server channel for config data sync
@@ -114,6 +116,7 @@ namespace HardcoreWater
 			sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.TryLoweringLiquidLevel from Hardcore Water!");		
 		}
 
+        /*
         internal void PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(ICoreServerAPI sapi, Harmony harmony)
         {
             var original = typeof(BlockBehaviorFiniteSpreadingLiquid).GetMethod("CanSpreadIntoBlock", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new Type[] {
@@ -124,6 +127,19 @@ namespace HardcoreWater
             harmony.Patch(original, new HarmonyMethod(prefix), null);
 
             sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
+        }
+        */
+
+        internal void PatchBlockBehaviorFiniteSpreadingLiquidFindDownwardPaths(ICoreServerAPI sapi, Harmony harmony)
+        {
+            var original = typeof(BlockBehaviorFiniteSpreadingLiquid).GetMethod("FindDownwardPaths", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new Type[] {
+                    typeof(IWorldAccessor),  typeof(BlockPos), typeof(Block)
+                });
+            var postfix = typeof(PatchBlockBehaviorFiniteSpreadingLiquid).GetMethod("PostfixFindDownwardPaths", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            harmony.Patch(original, null, new HarmonyMethod(postfix));
+
+            sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.FindDownwardPaths from Hardcore Water!");
         }
     }
 }

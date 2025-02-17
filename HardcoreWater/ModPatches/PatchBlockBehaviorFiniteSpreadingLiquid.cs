@@ -36,6 +36,7 @@ namespace AdditionalSpawnConstraints.ModPatches
             return true; // resume original method
 		}
 
+        /*
         [HarmonyPatch(typeof(BlockBehaviorFiniteSpreadingLiquid), "CanSpreadIntoBlock")]
         [HarmonyPrefix]
         static bool PrefixCanSpreadIntoBlock(BlockBehaviorFiniteSpreadingLiquid __instance, ref bool __result, string ___collidesWith, Block ourblock, Block ourSolid, BlockPos pos, BlockPos npos, BlockFacing facing, IWorldAccessor world)
@@ -78,6 +79,44 @@ namespace AdditionalSpawnConstraints.ModPatches
             }
 
             return true; // resume original method
+        }
+        */
+
+        [HarmonyPatch(typeof(BlockBehaviorFiniteSpreadingLiquid), "FindDownwardPaths")]
+        [HarmonyPrefix]
+        static void PostfixFindDownwardPaths(BlockBehaviorFiniteSpreadingLiquid __instance, ref List<PosAndDist> __result, IWorldAccessor world, BlockPos pos, Block ourBlock)
+        {
+            // If solid block of water is aqueduct, add aqueduct directions to valid downward paths
+            if (__result != null && world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid) is BlockAqueduct blockAqueduct)
+            {
+                // Scan blocks front and back of the aqueduct
+                if (BlockFacing.FromFirstLetter(blockAqueduct.Orientation) == BlockFacing.NORTH)
+                {
+                    __result.Add(new PosAndDist()
+                    {
+                        pos = pos.NorthCopy(),
+                        dist = 1
+                    });
+                    __result.Add(new PosAndDist()
+                    {
+                        pos = pos.SouthCopy(),
+                        dist = 1
+                    });
+                }
+                else
+                {
+                    __result.Add(new PosAndDist()
+                    {
+                        pos = pos.WestCopy(),
+                        dist = 1
+                    });
+                    __result.Add(new PosAndDist()
+                    {
+                        pos = pos.EastCopy(),
+                        dist = 1
+                    });
+                }
+            }
         }
     }
 }
