@@ -9,6 +9,8 @@ using HardcoreWater.ModBlockEntity;
 using HarmonyLib;
 using AdditionalSpawnConstraints.ModPatches;
 using Vintagestory.GameContent;
+using System;
+using Vintagestory.API.MathTools;
 
 namespace HardcoreWater
 {
@@ -71,7 +73,9 @@ namespace HardcoreWater
 				harmonyInst = new Harmony(Mod.Info.ModID);
 
 				PatchBlockBehaviorFiniteSpreadingLiquidTryLoweringLiquidLevel(sapi, harmonyInst);
-			}
+
+                PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(sapi, harmonyInst);
+            }
 
             // Create server channel for config data sync
             this.serverChannel = sapi.Network.RegisterChannel("hardcorewater")
@@ -109,5 +113,17 @@ namespace HardcoreWater
 
 			sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.TryLoweringLiquidLevel from Hardcore Water!");		
 		}
+
+        internal void PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(ICoreServerAPI sapi, Harmony harmony)
+        {
+            var original = typeof(BlockBehaviorFiniteSpreadingLiquid).GetMethod("CanSpreadIntoBlock", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new Type[] {
+                    typeof(Block),  typeof(Block), typeof(BlockPos), typeof(BlockPos), typeof(BlockFacing), typeof(IWorldAccessor)             
+                });
+            var prefix = typeof(PatchBlockBehaviorFiniteSpreadingLiquid).GetMethod("PrefixCanSpreadIntoBlock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            harmony.Patch(original, new HarmonyMethod(prefix), null);
+
+            sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
+        }
     }
 }

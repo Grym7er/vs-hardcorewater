@@ -35,6 +35,50 @@ namespace AdditionalSpawnConstraints.ModPatches
 
             return true; // resume original method
 		}
+
+        [HarmonyPatch(typeof(BlockBehaviorFiniteSpreadingLiquid), "CanSpreadIntoBlock")]
+        [HarmonyPrefix]
+        static bool PrefixCanSpreadIntoBlock(BlockBehaviorFiniteSpreadingLiquid __instance, ref bool __result, string ___collidesWith, Block ourblock, Block ourSolid, BlockPos pos, BlockPos npos, BlockFacing facing, IWorldAccessor world)
+        {
+            if (ourSolid is IAqueduct aqueduct)
+            {
+                if (ourSolid.GetBlockEntity<BlockEntityAqueduct>(pos) is BlockEntityAqueduct blockEntityAqueduct)
+                {
+                    float liquidbarrier = ourSolid.GetLiquidBarrierHeightOnSide(facing, pos);
+                    if (liquidbarrier >= (float)ourblock.LiquidLevel / 7f)
+                    {
+                        __result = false;
+                        return false; // skip original method
+                    }
+                    if (world.BlockAccessor.GetBlock(npos, 1).GetLiquidBarrierHeightOnSide(facing.Opposite, npos) >= (float)ourblock.LiquidLevel / 7f)
+                    {
+                        __result = false;
+                        return false; // skip original method
+                    }
+                    Block neighborLiquid = world.BlockAccessor.GetBlock(npos, 2);
+                    if ((ourblock.LiquidCode == neighborLiquid.LiquidCode))
+                    {
+                        __result = neighborLiquid.LiquidLevel < ourblock.LiquidLevel;
+                        return false; // skip original method
+                    }
+                    if (neighborLiquid.LiquidLevel == 7 && !(neighborLiquid.IsLiquid() && ourblock.IsLiquid() && neighborLiquid.LiquidCode == ___collidesWith))
+                    {
+                        __result = false;
+                        return false; // skip original method
+                    }
+                    if (neighborLiquid.BlockId != 0)
+                    {
+                        __result = neighborLiquid.Replaceable >= ourblock.Replaceable;
+                        return false; // skip original method
+                    }
+
+                    __result = ourblock.LiquidLevel > 1 || facing == BlockFacing.DOWN;
+                    return false; // skip original method
+                }
+            }
+
+            return true; // resume original method
+        }
     }
 }
     
