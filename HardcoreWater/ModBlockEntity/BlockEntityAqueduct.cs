@@ -140,7 +140,7 @@ namespace HardcoreWater.ModBlockEntity
                 {
                     hasSource = true; // Connected to waterfall adjacent with above flowing water or source block is in unloaded chunk
                 }
-                else if ((IsValidWaterSource(this.Pos, 6) && IsValidWaterSourceOrWaterFall(this.WaterSourcePos, 6)) || unloadedWaterSource)
+                else if ((IsValidWaterSource(this.Pos, 6) && IsValidWaterSourceOrWaterFall(this.WaterSourcePos, 6) && (this.Pos.Y == this.WaterSourcePos.Y-1)) || unloadedWaterSource)
                 {
                     hasSource = true; // Connected to waterfall above or source block is in unloaded chunk
                 }
@@ -170,7 +170,7 @@ namespace HardcoreWater.ModBlockEntity
 
                 bool hasSource = false;
                 BlockPos upwardPos = this.Pos.UpCopy();
-                if (IsValidWaterSource(this.Pos))
+                if (IsValidWaterSource(this.Pos, 7))
                 {
                     this.WaterSourcePos = this.Pos;
                     this.WaterLevel = 7;
