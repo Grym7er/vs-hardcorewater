@@ -1,3 +1,9 @@
+### v1.20.x-1.3.3
+
+- Fixed aqueduct end flow issues by patching FindDownwardPaths in BlockBehaviorFiniteSpreadingLiquid
+- Changed water source validity checks to make aqueduct usage a bit more intuitive
+- Added spanish translations; thanks to C4BR3R4!
+
 ### v1.20.x-1.3.2
 
 - Fixed opaque/solid side issues with enclosed aqueducts
