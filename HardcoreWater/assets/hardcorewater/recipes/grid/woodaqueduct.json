@@ -5,18 +5,19 @@
       "type": "item",
       "code": "game:hammer-*",
       "isTool": true,
-      "toolDurabilityCost": 40
+      "toolDurabilityCost": 20
     },
     "C": {
       "type": "item",
       "code": "game:chisel-*",
       "isTool": true,
-      "toolDurabilityCost": 20
+      "toolDurabilityCost": 10
     },
     "L": {
       "type": "block",
       "code": "game:debarkedlog-*-ud",
-      "name": "wood"
+      "name": "wood",
+      "quantity": 2
     },
     "R": {
       "type": "item",
@@ -28,6 +29,6 @@
   "output": {
     "type": "block",
     "code": "hardcorewater:aqueduct-{wood}-none-ns",
-    "quantity": 1
+    "quantity": 2
   }
 }

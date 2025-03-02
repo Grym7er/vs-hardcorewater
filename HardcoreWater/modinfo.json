@@ -1,12 +1,12 @@
 {
-    "type": "code",
-    "modid": "hardcorewater",
-    "name": "Hardcore Water : Transport Edition",
-    "authors": [ "Zach2039" ],
-	"contributors": [ "C4BR3R4" ],
-    "description": "Previously prevented buckets from placing source blocks, but now adds methods of water transportation for when source block moving is disabled in your worlds.",
-    "version": "1.3.4",
-    "dependencies": {
-        "game": "*"
-    }
+  "type": "code",
+  "modid": "hardcorewater",
+  "name": "Hardcore Water : Transport Edition",
+  "authors": [ "Zach2039" ],
+  "contributors": [ "C4BR3R4" ],
+  "description": "Previously prevented buckets from placing source blocks, but now adds methods of water transportation for when source block moving is disabled in your worlds.",
+  "version": "1.3.5",
+  "dependencies": {
+    "game": "*"
+  }
 }

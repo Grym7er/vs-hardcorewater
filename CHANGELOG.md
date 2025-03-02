@@ -1,3 +1,8 @@
+### v1.20.x-1.3.5
+
+- Made wooden aqueduct recipe slightly cheaper
+- Changed extended debug info printout for aqueducts
+
 ### v1.20.x-1.3.4
 
 - Fix disconnected aqueduct case staying filled

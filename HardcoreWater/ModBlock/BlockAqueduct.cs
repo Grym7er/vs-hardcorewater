@@ -150,8 +150,8 @@ namespace HardcoreWater.ModBlock
 				dsc.AppendLine(Lang.Get("Water Level: {0}, Source Position: {1}, Current Position: {2}", new object[]
 					{
 						blockEntityAqueduct.WaterLevel,
-						blockEntityAqueduct.WaterSourcePos != null ? blockEntityAqueduct.WaterSourcePos.ToString() : "none",
-                        pos.ToString()
+						blockEntityAqueduct.WaterSourcePos != null ? blockEntityAqueduct.WaterSourcePos.ToLocalPosition(this.api).ToString() : "null",
+                        pos != null ? pos.ToLocalPosition(this.api).ToString() : "null"
                     }));
 				if (world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid) is Block block)
 				{
