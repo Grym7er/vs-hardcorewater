@@ -48,7 +48,7 @@ namespace HardcoreWater.ModBlockEntity
             return false;
         }
 
-        private bool IsValidFilledAqueduct(BlockPos blockPos, int minLevel = 7)
+        private bool IsValidFilledAqueduct(BlockPos blockPos)
         {
             
             if (this.Api.World.BlockAccessor.GetBlock(blockPos) is IAqueduct aqueduct)
@@ -189,7 +189,7 @@ namespace HardcoreWater.ModBlockEntity
                 {
                     hasSource = true; // Connected to waterfall above or source block is in unloaded chunk
                 }
-                else if (IsValidFilledAqueduct(this.WaterSourcePos, 6) || unloadedWaterSource)
+                else if (IsValidFilledAqueduct(this.WaterSourcePos) || unloadedWaterSource)
 				{
                     hasSource = true; // Connected to aqueduct that isn't using this one as a source and has valid water source or source block is in unloaded chunk
                 }
@@ -251,7 +251,7 @@ namespace HardcoreWater.ModBlockEntity
                     this.HasWaterSource = true;
                     // Connected to waterfall or water above
                 }
-                else if (IsValidFilledAqueduct(upwardPos, 6))
+                else if (IsValidFilledAqueduct(upwardPos))
                 {
                     this.WaterSourcePos = upwardPos;
                     this.WaterLevel = 6;
@@ -288,7 +288,7 @@ namespace HardcoreWater.ModBlockEntity
                             this.HasWaterSource = true;
                             break; // Connected to waterfall adjacent with above flowing water
                         }
-                        else if (IsValidFilledAqueduct(endPos, 6))
+                        else if (IsValidFilledAqueduct(endPos))
                         {
                             this.WaterSourcePos = endPos;
                             this.WaterLevel = 6;
