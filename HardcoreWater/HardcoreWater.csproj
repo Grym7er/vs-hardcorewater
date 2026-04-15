@@ -1,38 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
+    <VintageStoryPath Condition="'$(VINTAGE_STORY)' != ''">$(VINTAGE_STORY)</VintageStoryPath>
+    <VintageStoryPath Condition="'$(VintageStoryPath)' == '' and '$(OS)' == 'Windows_NT'">C:\Program Files\Vintage Story</VintageStoryPath>
+    <VintageStoryPath Condition="'$(VintageStoryPath)' == '' and '$(OS)' != 'Windows_NT'">/home/dewet/Games/vintagestory</VintageStoryPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="VintagestoryAPI">
-      <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/VintagestoryAPI.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="VSSurvivalMod">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/Mods/VSSurvivalMod.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VSEssentials">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSEssentials.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/Mods/VSEssentials.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VSCreativeMod">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSCreativeMod.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/Mods/VSCreativeMod.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>$(VINTAGE_STORY)/Lib/Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/Lib/Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="protobuf-net">
-      <HintPath>$(VINTAGE_STORY)/Lib/protobuf-net.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/Lib/protobuf-net.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="HarmonyLib">
-      <HintPath>$(VINTAGE_STORY)/Lib/0Harmony.dll</HintPath>
+      <HintPath>$(VintageStoryPath)/Lib/0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -52,5 +55,16 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Target Name="ValidateVintageStoryReferences" BeforeTargets="ResolveReferences">
+    <Error Text="Vintage Story path was not resolved. Set VINTAGE_STORY to your game install directory." Condition="'$(VintageStoryPath)' == ''" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/VintagestoryAPI.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/VintagestoryAPI.dll')" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/Mods/VSSurvivalMod.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/Mods/VSSurvivalMod.dll')" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/Mods/VSEssentials.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/Mods/VSEssentials.dll')" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/Mods/VSCreativeMod.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/Mods/VSCreativeMod.dll')" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/Lib/0Harmony.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/Lib/0Harmony.dll')" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/Lib/protobuf-net.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/Lib/protobuf-net.dll')" />
+    <Error Text="Missing required Vintage Story assembly: $(VintageStoryPath)/Lib/Newtonsoft.Json.dll. Set VINTAGE_STORY correctly." Condition="!Exists('$(VintageStoryPath)/Lib/Newtonsoft.Json.dll')" />
+  </Target>
 
 </Project>

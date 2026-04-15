@@ -1,6 +1,56 @@
 Hardcore Water : Transport Edition
 =================
 
+Local Build Prerequisites
+--------
+
+* .NET SDK `8.0.125` (pinned via `global.json`)
+* Vintage Story `1.21.6`
+* A valid game install path exposed via `VINTAGE_STORY`, or available at fallback path:
+  * Linux/macOS fallback: `/home/dewet/Games/vintagestory`
+  * Windows fallback: `C:\Program Files\Vintage Story`
+
+Set `VINTAGE_STORY` explicitly if your install is elsewhere:
+
+* Linux/macOS:
+  * `export VINTAGE_STORY="/path/to/Vintage Story"`
+* Windows PowerShell:
+  * `$env:VINTAGE_STORY="C:\\Path\\To\\Vintage Story"`
+
+Daily Build Flow
+--------
+
+For normal local compilation (does not require Cake project):
+
+* Debug build:
+  * `./build_mod.sh`
+* Release build:
+  * `./build_mod.sh Release`
+
+Output path:
+
+* `HardcoreWater/bin/<Configuration>/Mods/mod`
+
+Build And Deploy (Debug)
+--------
+
+To build, zip, and copy directly to your local mods folder:
+
+* `./build_and_deploy_debug.sh`
+
+Override mods deployment folder (optional):
+
+* `export VINTAGE_STORY_MODS_DIR="/path/to/VintagestoryData/Mods"`
+
+Packaging Flow (Cake)
+--------
+
+If you want packaged release output with Cake tasks:
+
+* `./build.sh`
+
+This uses `CakeBuild` and is optional for normal compile-test iteration.
+
 Overview
 --------
 

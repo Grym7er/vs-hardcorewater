@@ -1,19 +1,50 @@
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
+using System.Linq;
 using HardcoreWater.ModBlock;
 using HardcoreWater.ModBlockEntity;
 using HarmonyLib;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Util;
-using Vintagestory.Common;
 using Vintagestory.GameContent;
 
 namespace AdditionalSpawnConstraints.ModPatches
 {
 	public class PatchBlockBehaviorFiniteSpreadingLiquid
 	{
+        private static bool IsValidAqueductPathCandidate(IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
+        {
+            BlockFacing facing = BlockFacing.HORIZONTALS.FirstOrDefault(f => sourcePos.AddCopy(f).Equals(candidatePos));
+            if (facing == null) return false;
+
+            Block sourceSolid = world.BlockAccessor.GetBlock(sourcePos, BlockLayersAccess.Solid);
+            Block candidateSolid = world.BlockAccessor.GetBlock(candidatePos, BlockLayersAccess.Solid);
+            Block candidateFluid = world.BlockAccessor.GetBlock(candidatePos, BlockLayersAccess.Fluid);
+
+            if (sourceSolid == null || candidateSolid == null || candidateFluid == null) return false;
+            if (!(candidateSolid is IAqueduct)) return false;
+
+            // Respect standard spread constraints so appended paths don't bypass survival invariants.
+            float sourceBarrier = sourceSolid.GetLiquidBarrierHeightOnSide(facing, sourcePos);
+            float candidateBarrier = candidateSolid.GetLiquidBarrierHeightOnSide(facing.Opposite, candidatePos);
+            if (sourceBarrier >= (float)ourBlock.LiquidLevel / 7f || candidateBarrier >= (float)ourBlock.LiquidLevel / 7f) return false;
+
+            if (candidateFluid.BlockId != 0 && candidateFluid.Replaceable < ourBlock.Replaceable) return false;
+
+            return true;
+        }
+
+        private static void TryAddCandidatePath(List<PosAndDist> paths, IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
+        {
+            if (!IsValidAqueductPathCandidate(world, sourcePos, candidatePos, ourBlock)) return;
+            if (paths.Exists(pad => pad.pos.Equals(candidatePos))) return;
+
+            paths.Add(new PosAndDist()
+            {
+                pos = candidatePos,
+                dist = 1
+            });
+        }
+
         [HarmonyPatch(typeof(BlockBehaviorFiniteSpreadingLiquid), "TryLoweringLiquidLevel")]
         [HarmonyPrefix]
 		static bool PrefixTryLoweringLiquidLevel(BlockBehaviorFiniteSpreadingLiquid __instance, ref bool __result, Block ourBlock, IWorldAccessor world, BlockPos pos)
@@ -83,38 +114,27 @@ namespace AdditionalSpawnConstraints.ModPatches
         */
 
         [HarmonyPatch(typeof(BlockBehaviorFiniteSpreadingLiquid), "FindDownwardPaths")]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         static void PostfixFindDownwardPaths(BlockBehaviorFiniteSpreadingLiquid __instance, ref List<PosAndDist> __result, IWorldAccessor world, BlockPos pos, Block ourBlock)
         {
             // If solid block of water is aqueduct, add aqueduct directions to valid downward paths
             if (__result != null && world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid) is BlockAqueduct blockAqueduct)
             {
+                if (string.IsNullOrEmpty(blockAqueduct.Orientation))
+                {
+                    return;
+                }
+
                 // Scan blocks front and back of the aqueduct
                 if (BlockFacing.FromFirstLetter(blockAqueduct.Orientation) == BlockFacing.NORTH)
                 {
-                    __result.Add(new PosAndDist()
-                    {
-                        pos = pos.NorthCopy(),
-                        dist = 1
-                    });
-                    __result.Add(new PosAndDist()
-                    {
-                        pos = pos.SouthCopy(),
-                        dist = 1
-                    });
+                    TryAddCandidatePath(__result, world, pos, pos.NorthCopy(), ourBlock);
+                    TryAddCandidatePath(__result, world, pos, pos.SouthCopy(), ourBlock);
                 }
                 else
                 {
-                    __result.Add(new PosAndDist()
-                    {
-                        pos = pos.WestCopy(),
-                        dist = 1
-                    });
-                    __result.Add(new PosAndDist()
-                    {
-                        pos = pos.EastCopy(),
-                        dist = 1
-                    });
+                    TryAddCandidatePath(__result, world, pos, pos.WestCopy(), ourBlock);
+                    TryAddCandidatePath(__result, world, pos, pos.EastCopy(), ourBlock);
                 }
             }
         }

@@ -1,13 +1,8 @@
-﻿using HardcoreWater.ModBlock;
+using HardcoreWater.ModBlock;
 using System;
-using System.Text;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace HardcoreWater.ModBlockEntity
@@ -64,8 +59,8 @@ namespace HardcoreWater.ModBlockEntity
                 }
                 else
                 {
-                    // Sometimes block entity will return null while block is aqueduct; assume valid source
-                    return true;
+                    // A missing BE is usually a chunk/load boundary race. Treat as invalid for this tick.
+                    return false;
                 }
             }
             
@@ -105,6 +100,8 @@ namespace HardcoreWater.ModBlockEntity
 
             if (this.blockAqueduct == null)
                 return;
+            if (string.IsNullOrEmpty(this.blockAqueduct.Orientation))
+                return;
 
 			// Scan blocks front and back of the aqueduct
 			if (BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation) == BlockFacing.NORTH)
@@ -122,6 +119,15 @@ namespace HardcoreWater.ModBlockEntity
 			//if (this.WaterSourcePos != null)
             if (this.HasWaterSource)
 			{
+                if (this.WaterSourcePos == null)
+                {
+                    // Persisted state invariant guard: a source flag without source position is invalid.
+                    this.HasWaterSource = false;
+                    this.WaterSourceReacquireTimeout = 4;
+                    this.MarkDirty(true);
+                    return;
+                }
+
 				bool hasSource = false;
                 bool unloadedWaterSource = this.Api.World.BlockAccessor.GetChunkAtBlockPos(this.WaterSourcePos) == null;
                 if (IsValidWaterSource(this.Pos, 7) || unloadedWaterSource)
@@ -247,26 +253,23 @@ namespace HardcoreWater.ModBlockEntity
 				{
                     // Handle fresh, salt, and boiling water separately, lest we desalinate or something else weird
                     Block ourBlockFluid = this.Api.World.BlockAccessor.GetBlock(this.Pos, BlockLayersAccess.Fluid);
-                    Block liquidSourceBlock;
                     Block liquidBlockToSet;
-                    if (ourBlockFluid != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
+                    if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
                     {
-                        liquidSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-7"));
                         liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-" + Math.Min(7, this.WaterLevel)));
                     }
-                    else if (ourBlockFluid != null && ourBlockFluid.Code.BeginsWith("game", "boiling"))
+                    else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "boiling"))
                     {
-                        liquidSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-7"));
                         liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-" + Math.Min(7, this.WaterLevel)));
                     }
                     else
                     {
-                        liquidSourceBlock = this.Api.World.GetBlock(new AssetLocation("game:water-still-7"));
                         liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + Math.Min(7, this.WaterLevel)));
                     }
 
-                    bool notIced = !ourBlockFluid.Code.Path.Contains("ice");
-                    if (notIced && ourBlockFluid.LiquidLevel < this.WaterLevel && !HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
+                    bool hasFluidCodePath = ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.Path != null;
+                    bool notIced = !hasFluidCodePath || !ourBlockFluid.Code.Path.Contains("ice");
+                    if (ourBlockFluid != null && liquidBlockToSet != null && notIced && ourBlockFluid.LiquidLevel < this.WaterLevel && !HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
                     {
                         this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
                         this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
@@ -286,7 +289,8 @@ namespace HardcoreWater.ModBlockEntity
 		{
 			base.Initialize(api);
 			this.blockAqueduct = (base.Block as IAqueduct);
-			this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int) Math.Round(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds * 1000), 0);
+            float clampedTickFrequencySeconds = GameMath.Clamp(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds, 0.1f, 10f);
+			this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int)Math.Round(clampedTickFrequencySeconds * 1000), 0);
 		}
 
 		public override void ToTreeAttributes(ITreeAttribute tree)
@@ -304,8 +308,15 @@ namespace HardcoreWater.ModBlockEntity
 			base.FromTreeAttributes(tree, worldAccessForResolve);
 			this.WaterLevel = tree.GetInt("WaterLevel");
             this.WaterSourceReacquireTimeout = tree.GetInt("WaterSourceReacquireTimeout", 0);
-            this.HasWaterSource = tree.GetBool("HasWaterSource", true);
+            this.HasWaterSource = tree.GetBool("HasWaterSource", false);
             this.WaterSourcePos = tree.GetBlockPos("WaterSourcePos", null);
+
+            // Normalize deserialized invariants for older saves.
+            if (this.HasWaterSource && this.WaterSourcePos == null)
+            {
+                this.HasWaterSource = false;
+                this.WaterSourceReacquireTimeout = Math.Max(this.WaterSourceReacquireTimeout, 1);
+            }
         }
 
 		private IAqueduct blockAqueduct;

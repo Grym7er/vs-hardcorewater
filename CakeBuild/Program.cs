@@ -10,7 +10,6 @@ using Cake.Frosting;
 using Cake.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Vintagestory.API.Common;
 
 public static class Program
 {
@@ -35,10 +34,19 @@ public class BuildContext : FrostingContext
     {
         BuildConfiguration = context.Argument("configuration", "Release");
         SkipJsonValidation = context.Argument("skipJsonValidation", false);
-        var modInfo = context.DeserializeJsonFromFile<ModInfo>($"../{BuildContext.ProjectName}/modinfo.json");
+        var modInfo = context.DeserializeJsonFromFile<LocalModInfo>($"../{BuildContext.ProjectName}/modinfo.json");
         Version = modInfo.Version;
-        Name = modInfo.ModID;
+        Name = modInfo.ModId;
     }
+}
+
+public class LocalModInfo
+{
+    [JsonProperty("modid")]
+    public string ModId { get; set; } = "hardcorewater";
+
+    [JsonProperty("version")]
+    public string Version { get; set; } = "0.0.0";
 }
 
 [TaskName("ValidateJson")]
