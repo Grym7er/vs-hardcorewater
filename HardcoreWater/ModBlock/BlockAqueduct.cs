@@ -108,6 +108,7 @@ namespace HardcoreWater.ModBlock
             {
                 return;
             }
+
             world.BlockAccessor.ExchangeBlock(block.BlockId, pos); // ExchangeBlock so that block entity is preserved
             world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
         }

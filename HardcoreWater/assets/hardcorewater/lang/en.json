@@ -1,4 +1,5 @@
 {
+  "game:tabname-hardcorewater": "Hardcore Water",
   "craftinginfo-aqueducts-title": "Game Mechanic: Aqueducts",
   "craftinginfo-aqueducts-text": "<strong>Aqueducts</strong><br><i>Aqueducts can be used to transport water long distances.</i><br><br><a href=\"handbooksearch://aqueduct\">Aqueduct sections</a> must be placed adjacent to a water source, with one of the open sides facing the source. Further sections can be placed and will create non-source water provided that the original source block is not removed nor the sections disconnected.",
 

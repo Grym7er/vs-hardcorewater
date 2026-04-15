@@ -62,6 +62,9 @@
 		],
 		"terrain": [
 			"*-none-ns"
+		],
+		"hardcorewater": [
+			"*-none-ns"
 		]
 	},
 	"shapeByType": {

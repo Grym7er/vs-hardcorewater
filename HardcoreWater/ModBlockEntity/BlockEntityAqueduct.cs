@@ -9,6 +9,13 @@ namespace HardcoreWater.ModBlockEntity
 {
     public class BlockEntityAqueduct : BlockEntity
 	{
+        private const float ReacquireTimeoutSeconds = 3f;
+
+        private int GetReacquireTimeoutTicks()
+        {
+            return Math.Max(1, (int)Math.Ceiling(ReacquireTimeoutSeconds / this.tickIntervalSeconds));
+        }
+
         private bool IsValidWaterSourceOrWaterFall(BlockPos blockPos, int minLevel = 7)
         {
             bool isValid = IsValidWaterSource(blockPos, minLevel) || IsValidWaterFall(blockPos);
@@ -94,9 +101,36 @@ namespace HardcoreWater.ModBlockEntity
             return isSolidTop;
         }
 
+        private bool HasOpenOutletToAir(BlockPos[] blockPosFB)
+        {
+            foreach (BlockPos endPos in blockPosFB)
+            {
+                Block endSolid = this.Api.World.BlockAccessor.GetBlock(endPos, BlockLayersAccess.Solid);
+                if (endSolid is IAqueduct)
+                {
+                    continue;
+                }
+
+                Block endFluid = this.Api.World.BlockAccessor.GetBlock(endPos, BlockLayersAccess.Fluid);
+                bool emptyFluidCell = endFluid == null || endFluid.BlockId == 0;
+                bool notBlockedBySolid = endSolid == null || endSolid.BlockId == 0 || endSolid.Replaceable >= 6000;
+                if (emptyFluidCell && notBlockedBySolid)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 		private void onServerTick1s(float dt)
 		{
 			BlockPos[] blockPosFB = new BlockPos[2];
+            bool shouldMarkDirty = false;
+            bool shouldTriggerNeighborUpdate = false;
+            bool oldHasWaterSource = this.HasWaterSource;
+            BlockPos oldWaterSourcePos = this.WaterSourcePos;
+            int oldWaterLevelState = this.WaterLevel;
 
             if (this.blockAqueduct == null)
                 return;
@@ -122,9 +156,14 @@ namespace HardcoreWater.ModBlockEntity
                 if (this.WaterSourcePos == null)
                 {
                     // Persisted state invariant guard: a source flag without source position is invalid.
+                    bool hadSource = this.HasWaterSource;
                     this.HasWaterSource = false;
-                    this.WaterSourceReacquireTimeout = 4;
-                    this.MarkDirty(true);
+                    this.WaterSourceReacquireTimeout = GetReacquireTimeoutTicks();
+                    shouldMarkDirty = hadSource;
+                    if (shouldMarkDirty)
+                    {
+                        this.MarkDirty(true);
+                    }
                     return;
                 }
 
@@ -157,20 +196,32 @@ namespace HardcoreWater.ModBlockEntity
 
                 if (!hasSource || HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
 				{
-                    this.WaterSourceReacquireTimeout = 4;
+                    bool stateChanged = this.HasWaterSource || this.WaterSourcePos != null || this.WaterSourceReacquireTimeout != GetReacquireTimeoutTicks();
+                    this.WaterSourceReacquireTimeout = GetReacquireTimeoutTicks();
                     this.HasWaterSource = false;
                     this.WaterSourcePos = null;
-                    this.MarkDirty(true);
+                    shouldMarkDirty = shouldMarkDirty || stateChanged;
 				}
 			}
 			else
 			{
                 if (WaterSourceReacquireTimeout > 0)
                 {
+                    int oldTimeout = this.WaterSourceReacquireTimeout;
+                    int oldLevel = this.WaterLevel;
                     --WaterSourceReacquireTimeout;
                     this.WaterLevel = Math.Max(0, this.WaterLevel - 1);
-                    this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
-                    this.MarkDirty(true);
+                    bool stateChanged = oldLevel != this.WaterLevel || oldTimeout != this.WaterSourceReacquireTimeout;
+                    shouldMarkDirty = shouldMarkDirty || stateChanged;
+                    shouldTriggerNeighborUpdate = shouldTriggerNeighborUpdate || oldLevel != this.WaterLevel;
+                    if (shouldTriggerNeighborUpdate)
+                    {
+                        this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
+                    }
+                    if (shouldMarkDirty)
+                    {
+                        this.MarkDirty(true);
+                    }
                     return;
                 }
 
@@ -272,16 +323,42 @@ namespace HardcoreWater.ModBlockEntity
                     if (ourBlockFluid != null && liquidBlockToSet != null && notIced && ourBlockFluid.LiquidLevel < this.WaterLevel && !HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
                     {
                         this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
-                        this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
-                        this.MarkDirty(true);
+                        shouldTriggerNeighborUpdate = true;
+                        shouldMarkDirty = true;
                     }
                 }
 				else
 				{
+                    int oldLevel = this.WaterLevel;
                     this.WaterLevel = Math.Max(0, this.WaterLevel - 1);
-                    this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
-                    this.MarkDirty(true);
+                    if (oldLevel != this.WaterLevel)
+                    {
+                        shouldTriggerNeighborUpdate = true;
+                        shouldMarkDirty = true;
+                    }
                 }
+            }
+
+            if (shouldTriggerNeighborUpdate)
+            {
+                this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
+            }
+            bool sourcePosChanged = (oldWaterSourcePos == null) != (this.WaterSourcePos == null)
+                || (oldWaterSourcePos != null && !oldWaterSourcePos.Equals(this.WaterSourcePos));
+            if (oldHasWaterSource != this.HasWaterSource || oldWaterLevelState != this.WaterLevel || sourcePosChanged)
+            {
+                shouldMarkDirty = true;
+            }
+            else if (this.HasWaterSource && this.WaterLevel > 0 && !shouldTriggerNeighborUpdate)
+            {
+                if (HasOpenOutletToAir(blockPosFB))
+                {
+                    this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
+                }
+            }
+            if (shouldMarkDirty)
+            {
+                this.MarkDirty(true);
             }
 		}
 
@@ -289,8 +366,8 @@ namespace HardcoreWater.ModBlockEntity
 		{
 			base.Initialize(api);
 			this.blockAqueduct = (base.Block as IAqueduct);
-            float clampedTickFrequencySeconds = GameMath.Clamp(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds, 0.1f, 10f);
-			this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int)Math.Round(clampedTickFrequencySeconds * 1000), 0);
+            this.tickIntervalSeconds = GameMath.Clamp(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds, 0.1f, 10f);
+			this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int)Math.Round(this.tickIntervalSeconds * 1000), 0);
 		}
 
 		public override void ToTreeAttributes(ITreeAttribute tree)
@@ -320,6 +397,7 @@ namespace HardcoreWater.ModBlockEntity
         }
 
 		private IAqueduct blockAqueduct;
+        private float tickIntervalSeconds = 1f;
 
 		public int WaterLevel { get; set; } = 0;
 

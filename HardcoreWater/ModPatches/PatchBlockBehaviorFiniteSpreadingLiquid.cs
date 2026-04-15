@@ -11,6 +11,18 @@ namespace AdditionalSpawnConstraints.ModPatches
 {
 	public class PatchBlockBehaviorFiniteSpreadingLiquid
 	{
+        private static bool AcceptsFlowFromSide(IAqueduct aqueduct, BlockFacing incomingSide)
+        {
+            if (string.IsNullOrEmpty(aqueduct.Orientation) || aqueduct.Orientation.Length < 2)
+            {
+                return false;
+            }
+
+            BlockFacing orientationA = BlockFacing.FromFirstLetter(aqueduct.Orientation[0]);
+            BlockFacing orientationB = BlockFacing.FromFirstLetter(aqueduct.Orientation[1]);
+            return orientationA == incomingSide || orientationB == incomingSide;
+        }
+
         private static bool IsValidAqueductPathCandidate(IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
         {
             BlockFacing facing = BlockFacing.HORIZONTALS.FirstOrDefault(f => sourcePos.AddCopy(f).Equals(candidatePos));
@@ -21,7 +33,10 @@ namespace AdditionalSpawnConstraints.ModPatches
             Block candidateFluid = world.BlockAccessor.GetBlock(candidatePos, BlockLayersAccess.Fluid);
 
             if (sourceSolid == null || candidateSolid == null || candidateFluid == null) return false;
-            if (!(candidateSolid is IAqueduct)) return false;
+            if (!(candidateSolid is IAqueduct candidateAqueduct)) return false;
+
+            // Flow enters candidate from the opposite side of source->candidate facing.
+            if (!AcceptsFlowFromSide(candidateAqueduct, facing.Opposite)) return false;
 
             // Respect standard spread constraints so appended paths don't bypass survival invariants.
             float sourceBarrier = sourceSolid.GetLiquidBarrierHeightOnSide(facing, sourcePos);
@@ -36,6 +51,43 @@ namespace AdditionalSpawnConstraints.ModPatches
         private static void TryAddCandidatePath(List<PosAndDist> paths, IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
         {
             if (!IsValidAqueductPathCandidate(world, sourcePos, candidatePos, ourBlock)) return;
+            if (paths.Exists(pad => pad.pos.Equals(candidatePos))) return;
+
+            paths.Add(new PosAndDist()
+            {
+                pos = candidatePos,
+                dist = 1
+            });
+        }
+
+        private static bool IsValidOpenOutletCandidate(IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
+        {
+            BlockFacing facing = BlockFacing.HORIZONTALS.FirstOrDefault(f => sourcePos.AddCopy(f).Equals(candidatePos));
+            if (facing == null) return false;
+
+            Block sourceSolid = world.BlockAccessor.GetBlock(sourcePos, BlockLayersAccess.Solid);
+            Block candidateSolid = world.BlockAccessor.GetBlock(candidatePos, BlockLayersAccess.Solid);
+            Block candidateFluid = world.BlockAccessor.GetBlock(candidatePos, BlockLayersAccess.Fluid);
+            if (sourceSolid == null || candidateSolid == null || candidateFluid == null) return false;
+
+            if (candidateSolid is IAqueduct) return false;
+
+            // Keep same barrier invariants as normal spread.
+            float sourceBarrier = sourceSolid.GetLiquidBarrierHeightOnSide(facing, sourcePos);
+            float candidateBarrier = candidateSolid.GetLiquidBarrierHeightOnSide(facing.Opposite, candidatePos);
+            if (sourceBarrier >= (float)ourBlock.LiquidLevel / 7f || candidateBarrier >= (float)ourBlock.LiquidLevel / 7f) return false;
+
+            // Prefer empty cells; otherwise respect replaceable rules.
+            bool emptyFluidCell = candidateFluid.BlockId == 0;
+            bool fluidReplaceable = candidateFluid.Replaceable >= ourBlock.Replaceable;
+            if (!emptyFluidCell && !fluidReplaceable) return false;
+
+            return true;
+        }
+
+        private static void TryAddOpenOutletPath(List<PosAndDist> paths, IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
+        {
+            if (!IsValidOpenOutletCandidate(world, sourcePos, candidatePos, ourBlock)) return;
             if (paths.Exists(pad => pad.pos.Equals(candidatePos))) return;
 
             paths.Add(new PosAndDist()
@@ -130,11 +182,15 @@ namespace AdditionalSpawnConstraints.ModPatches
                 {
                     TryAddCandidatePath(__result, world, pos, pos.NorthCopy(), ourBlock);
                     TryAddCandidatePath(__result, world, pos, pos.SouthCopy(), ourBlock);
+                    TryAddOpenOutletPath(__result, world, pos, pos.NorthCopy(), ourBlock);
+                    TryAddOpenOutletPath(__result, world, pos, pos.SouthCopy(), ourBlock);
                 }
                 else
                 {
                     TryAddCandidatePath(__result, world, pos, pos.WestCopy(), ourBlock);
                     TryAddCandidatePath(__result, world, pos, pos.EastCopy(), ourBlock);
+                    TryAddOpenOutletPath(__result, world, pos, pos.WestCopy(), ourBlock);
+                    TryAddOpenOutletPath(__result, world, pos, pos.EastCopy(), ourBlock);
                 }
             }
         }

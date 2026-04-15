@@ -133,10 +133,50 @@ The mod is functionally solid and already includes meaningful hardening (config 
 
 ## Quick wins
 
-- Time-normalize reacquire timeout (seconds -> ticks conversion).
-- Reduce redundant neighbor update calls.
-- Add orientation compatibility in path candidate checks.
-- Avoid unnecessary MarkDirty/neighbor updates when no effective state change occurred.
+- Time-normalize reacquire timeout (seconds -> ticks conversion). **Implemented**
+- Reduce redundant neighbor update calls. **Implemented**
+- Add orientation compatibility in path candidate checks. **Implemented**
+- Avoid unnecessary MarkDirty/neighbor updates when no effective state change occurred. **Implemented**
+
+## Implemented Quick Wins (Current Status)
+
+The following quick wins have been implemented in code:
+
+1. **Time-normalized reacquire timeout**
+   - **File:** `HardcoreWater/ModBlockEntity/BlockEntityAqueduct.cs`
+   - Replaced hardcoded timeout tick usage with a duration-based model (`ReacquireTimeoutSeconds`) converted into ticks via current configured update interval.
+   - Behavior is now stable across different `AqueductUpdateFrequencySeconds` settings.
+
+2. **Reduced redundant neighbor update emissions**
+   - **File:** `HardcoreWater/ModBlockEntity/BlockEntityAqueduct.cs`
+   - Neighbor updates are now emitted through coalesced flags rather than repeated unconditional calls in multiple branches.
+   - Update emission is tied to effective state transitions (primarily level/fluid changes), reducing per-tick churn.
+
+3. **State-delta guards for dirty/update calls**
+   - **File:** `HardcoreWater/ModBlockEntity/BlockEntityAqueduct.cs`
+   - Added guards to avoid unnecessary `MarkDirty(true)` and neighbor updates when no meaningful block-entity state changed.
+   - Includes state tracking for `HasWaterSource`, `WaterSourcePos`, and `WaterLevel`.
+
+4. **Orientation-compatible path candidate filtering**
+   - **File:** `HardcoreWater/ModPatches/PatchBlockBehaviorFiniteSpreadingLiquid.cs`
+   - Added candidate-side acceptance checks (`AcceptsFlowFromSide`) before appending aqueduct path candidates.
+   - Prevents path injection into aqueduct neighbors that do not accept flow from the incoming side implied by source-to-candidate direction.
+
+## Observed / Expected Impact After Quick Wins
+
+- **Simulation consistency:** Reacquire/decay timing remains consistent when server owners change aqueduct update frequency.
+- **Performance:** Fewer redundant neighbor updates and dirty marks in steady-state or no-op ticks.
+- **Flow semantics:** Appended liquid paths better respect aqueduct orientation expectations.
+- **Maintainability:** Tick-side effects are more explicit and easier to reason about through consolidated update flags.
+
+## Validation Snapshot (Post-Implementation)
+
+- `dotnet build HardcoreWater/HardcoreWater.csproj -c Debug` succeeded.
+- `dotnet build HardcoreWater/HardcoreWater.csproj -c Release` succeeded.
+- Quick-win code checks:
+  - No remaining hardcoded `WaterSourceReacquireTimeout = 4` assignments.
+  - Orientation-side compatibility helper present in path candidate filter.
+  - Neighbor update call count in aqueduct tick path reduced and consolidated.
 
 ## Structural improvements
 
@@ -159,11 +199,8 @@ The mod is functionally solid and already includes meaningful hardening (config 
 
 1. **High priority**
    - Fix `IsValidFilledAqueduct()` level semantics.
-   - Add orientation/enclosure checks in path injection.
    - Harden fluid-family handling for unknown liquids.
 2. **Medium priority**
-   - Time-normalize reacquire timeout.
-   - Reduce neighbor update churn.
    - Add waterfall variant-key defensiveness.
 3. **Lower priority**
    - Allocation micro-optimizations.
