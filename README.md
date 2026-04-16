@@ -70,6 +70,34 @@ Config Settings (`VintageStoryData/ModConfig/HardcoreWater.json`)
 --------
 
 * `AqueductUpdateFrequencySeconds`: Sets how often aqueducts are allowed to update, in seconds; defaults to `0.75`.
+* `UnresolvedOwnerFallbackMode`: Controls Archimedes compat behavior when managed-family owner tracing fails:
+  * `VanillaFallback` (default): fallback to vanilla still outflow blocks.
+  * `SkipRefill`: do not refill that aqueduct segment until owner resolution succeeds.
+
+Archimedes Compatibility Contract (Runtime)
+--------
+
+When Archimedes Screw is installed, HardcoreWater compatibility expects:
+
+* Mod system type `ArchimedesScrew.ArchimedesScrewModSystem`.
+* Public `WaterManager` property on that mod system.
+* `WaterManager` methods:
+  * `TryResolveManagedWaterFamily`
+  * `TryResolveVanillaWaterFamily`
+  * `GetManagedBlock`
+  * `AssignOwnedSourceForController`
+  * `TryGetSourceOwner`
+  * `IsArchimedesSourceBlock`
+  * `IsArchimedesWaterBlock`
+
+If this contract is unavailable or changes at runtime, compat deactivates cleanly and aqueduct refill falls back according to `UnresolvedOwnerFallbackMode`.
+
+Runtime behavior notes:
+
+* Compat initialization remains startup + `SaveGameLoaded` first, then uses a bounded low-frequency recovery loop only when Archimedes is installed and compat is inactive.
+* String-based mod-system fallback resolves by mod ID (`thetruearchimedesscrew`, then `archimedes_screw`) to avoid type-name lookup mismatch.
+* When active, compat emits rate-limited debug summaries to aid live diagnostics without log spam.
+* Owner tracing includes a short-lived conservative cache for unloaded-source-chunk cases; if no safe cached mapping exists, behavior falls back to normal unresolved-owner handling.
 
 
 Future Plans

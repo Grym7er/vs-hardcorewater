@@ -59,6 +59,22 @@ This checklist is intended for validating the 1.21.6 migration while preserving 
 - [ ] Late joiners receive current server config.
 - [ ] Dedicated server + client behavior matches local host behavior.
 
+## Archimedes Screw Compatibility Contract
+
+- [ ] With `thetruearchimedesscrew` enabled, startup logs include `Archimedes compatibility active`.
+- [ ] If Archimedes is absent, startup logs include no recurring compat retry attempts or warning spam.
+- [ ] If Archimedes is present but compat starts inactive, bounded retries occur and eventually settle into active compat or stable inactive state after attempt limit.
+- [ ] String fallback lookup checks Archimedes mod IDs (`thetruearchimedesscrew`, then `archimedes_screw`) when `GetModSystem(string)` is used.
+- [ ] If Archimedes API contract drifts (missing required methods/signatures), compat deactivates cleanly with an actionable reason.
+- [ ] `SaveGameLoaded` rebind path successfully keeps compat active when `WaterManager` is refreshed.
+- [ ] Active compat periodically emits low-noise debug summary snapshots (rate-limited cadence).
+- [ ] Managed Archimedes water family remains managed while transported through aqueduct refill.
+- [ ] Ownership handoff still assigns controller ownership for aqueduct source/outlet cells when applicable.
+- [ ] If source chunk is unloaded during owner tracing, short-lived deferred cache can reuse recent owner/family mapping without cross-controller misassignment.
+- [ ] Unresolved owner behavior follows config:
+  - `VanillaFallback`: aqueduct refill falls back to vanilla still blocks.
+  - `SkipRefill`: aqueduct does not refill when owner resolution fails.
+
 ## Regression Acceptance Criteria
 
 - [ ] No server crashes from null source states or missing patch targets.

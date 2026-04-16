@@ -20,11 +20,17 @@ namespace HardcoreWater
     {
         private const string ArchimedesPrimaryModId = "thetruearchimedesscrew";
         private const string ArchimedesLegacyModId = "archimedes_screw";
+        private const int CompatRecoveryTickMs = 30000;
+        private const int CompatSummaryTickMs = 180000;
+        private const int MaxCompatRecoveryAttempts = 10;
 
         private IServerNetworkChannel serverChannel;
         private ICoreAPI api;
         public Harmony harmonyInst;
         internal static ArchimedesCompatService ArchimedesCompat { get; private set; }
+        private long compatRecoveryTickListenerId = -1;
+        private int compatRecoveryAttempts = 0;
+        private int compatSummaryAccumulatedMs = 0;
 
         public override void StartPre(ICoreAPI api)
         {
@@ -97,6 +103,7 @@ namespace HardcoreWater
 
             sapi.Event.PlayerJoin += this.OnPlayerJoin;
             sapi.Event.SaveGameLoaded += this.OnSaveGameLoaded;
+            compatRecoveryTickListenerId = sapi.Event.RegisterGameTickListener(OnCompatRecoveryTick, CompatRecoveryTickMs);
 
             base.StartServerSide(sapi);
         }
@@ -119,8 +126,15 @@ namespace HardcoreWater
             {
                 sapi.Event.PlayerJoin -= this.OnPlayerJoin;
                 sapi.Event.SaveGameLoaded -= this.OnSaveGameLoaded;
+                if (compatRecoveryTickListenerId >= 0)
+                {
+                    sapi.Event.UnregisterGameTickListener(compatRecoveryTickListenerId);
+                    compatRecoveryTickListenerId = -1;
+                }
             }
 
+            harmonyInst?.UnpatchAll(Mod.Info.ModID);
+            harmonyInst = null;
             ArchimedesCompat = null;
         }
 
@@ -134,6 +148,10 @@ namespace HardcoreWater
             }
 
             ArchimedesCompat = ArchimedesCompatService.Create(sapi);
+            if (ArchimedesCompat != null)
+            {
+                compatRecoveryAttempts = 0;
+            }
         }
 
         private void OnSaveGameLoaded()
@@ -151,6 +169,40 @@ namespace HardcoreWater
 
             ArchimedesCompat?.Refresh();
             ArchimedesCompat?.LogDebugSummaryIfNeeded();
+        }
+
+        private void OnCompatRecoveryTick(float dt)
+        {
+            if (this.api is not ICoreServerAPI sapi)
+            {
+                return;
+            }
+
+            bool installed = sapi.ModLoader.IsModEnabled(ArchimedesPrimaryModId) || sapi.ModLoader.IsModEnabled(ArchimedesLegacyModId);
+            if (!installed)
+            {
+                return;
+            }
+
+            if (ArchimedesCompat == null)
+            {
+                if (compatRecoveryAttempts >= MaxCompatRecoveryAttempts)
+                {
+                    return;
+                }
+
+                compatRecoveryAttempts++;
+                TryInitializeArchimedesCompat(sapi);
+                return;
+            }
+
+            ArchimedesCompat.Refresh();
+            compatSummaryAccumulatedMs += CompatRecoveryTickMs;
+            if (compatSummaryAccumulatedMs >= CompatSummaryTickMs)
+            {
+                ArchimedesCompat.LogDebugSummaryIfNeeded();
+                compatSummaryAccumulatedMs = 0;
+            }
         }
 
         internal void PatchBlockBehaviorFiniteSpreadingLiquidTryLoweringLiquidLevel(ICoreServerAPI sapi, Harmony harmony)
