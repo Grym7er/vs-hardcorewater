@@ -305,7 +305,25 @@ namespace HardcoreWater.ModBlockEntity
                     // Handle fresh, salt, and boiling water separately, lest we desalinate or something else weird
                     Block ourBlockFluid = this.Api.World.BlockAccessor.GetBlock(this.Pos, BlockLayersAccess.Fluid);
                     Block liquidBlockToSet;
-                    if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
+                    string ownerControllerId = null;
+                    string managedFamilyId = null;
+                    Block compatBlock = null;
+                    bool compatResolved = false;
+                    if (HardcoreWaterModSystem.ArchimedesCompat != null)
+                    {
+                        compatResolved = HardcoreWaterModSystem.ArchimedesCompat.TryResolveAqueductFill(
+                            this,
+                            ourBlockFluid,
+                            Math.Min(7, this.WaterLevel),
+                            out compatBlock,
+                            out ownerControllerId,
+                            out managedFamilyId);
+                    }
+                    if (compatResolved && compatBlock != null)
+                    {
+                        liquidBlockToSet = compatBlock;
+                    }
+                    else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
                     {
                         liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-" + Math.Min(7, this.WaterLevel)));
                     }
@@ -323,6 +341,19 @@ namespace HardcoreWater.ModBlockEntity
                     if (ourBlockFluid != null && liquidBlockToSet != null && notIced && ourBlockFluid.LiquidLevel < this.WaterLevel && !HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
                     {
                         this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
+                        if (!string.IsNullOrEmpty(ownerControllerId) &&
+                            !string.IsNullOrEmpty(managedFamilyId) &&
+                            HardcoreWaterModSystem.ArchimedesCompat != null)
+                        {
+                            // Strict-ownership path: this segment and source-height outflow cells retain controller ownership.
+                            HardcoreWaterModSystem.ArchimedesCompat.TryAssignOutletOwnership(
+                                this,
+                                new[] { this.Pos, blockPosFB[0], blockPosFB[1] },
+                                ownerControllerId,
+                                managedFamilyId
+                            );
+                        }
+
                         shouldTriggerNeighborUpdate = true;
                         shouldMarkDirty = true;
                     }

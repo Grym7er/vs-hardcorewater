@@ -6,6 +6,7 @@ using Vintagestory.API.Server;
 using HardcoreWater.ModNetwork;
 using HardcoreWater.ModBlock;
 using HardcoreWater.ModBlockEntity;
+using HardcoreWater.Compat;
 using HarmonyLib;
 using AdditionalSpawnConstraints.ModPatches;
 using Vintagestory.GameContent;
@@ -17,9 +18,13 @@ namespace HardcoreWater
 {
     public class HardcoreWaterModSystem : ModSystem
     {
+        private const string ArchimedesPrimaryModId = "thetruearchimedesscrew";
+        private const string ArchimedesLegacyModId = "archimedes_screw";
+
         private IServerNetworkChannel serverChannel;
         private ICoreAPI api;
         public Harmony harmonyInst;
+        internal static ArchimedesCompatService ArchimedesCompat { get; private set; }
 
         public override void StartPre(ICoreAPI api)
         {
@@ -77,6 +82,8 @@ namespace HardcoreWater
             this.serverChannel = sapi.Network.RegisterChannel("hardcorewater")
                 .RegisterMessageType<SyncConfigClientPacket>()
                 .SetMessageHandler<SyncConfigClientPacket>((player, packet) => {});
+
+            TryInitializeArchimedesCompat(sapi);
             
             if (!Harmony.HasAnyPatches(Mod.Info.ModID)) {
 				harmonyInst = new Harmony(Mod.Info.ModID);
@@ -89,6 +96,7 @@ namespace HardcoreWater
             }
 
             sapi.Event.PlayerJoin += this.OnPlayerJoin;
+            sapi.Event.SaveGameLoaded += this.OnSaveGameLoaded;
 
             base.StartServerSide(sapi);
         }
@@ -110,7 +118,39 @@ namespace HardcoreWater
             if (this.api is ICoreServerAPI sapi)
             {
                 sapi.Event.PlayerJoin -= this.OnPlayerJoin;
+                sapi.Event.SaveGameLoaded -= this.OnSaveGameLoaded;
             }
+
+            ArchimedesCompat = null;
+        }
+
+        private void TryInitializeArchimedesCompat(ICoreServerAPI sapi)
+        {
+            bool installed = sapi.ModLoader.IsModEnabled(ArchimedesPrimaryModId) || sapi.ModLoader.IsModEnabled(ArchimedesLegacyModId);
+            if (!installed)
+            {
+                ArchimedesCompat = null;
+                return;
+            }
+
+            ArchimedesCompat = ArchimedesCompatService.Create(sapi);
+        }
+
+        private void OnSaveGameLoaded()
+        {
+            if (this.api is not ICoreServerAPI sapi)
+            {
+                return;
+            }
+
+            // Align with waterfall-compat style: re-resolve once when game state is fully loaded.
+            if (ArchimedesCompat == null)
+            {
+                TryInitializeArchimedesCompat(sapi);
+            }
+
+            ArchimedesCompat?.Refresh();
+            ArchimedesCompat?.LogDebugSummaryIfNeeded();
         }
 
         internal void PatchBlockBehaviorFiniteSpreadingLiquidTryLoweringLiquidLevel(ICoreServerAPI sapi, Harmony harmony)
