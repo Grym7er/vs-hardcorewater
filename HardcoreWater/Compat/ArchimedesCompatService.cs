@@ -144,7 +144,10 @@ namespace HardcoreWater.Compat
                     return false;
                 }
 
-                fillBlock = ResolveVanillaStillBlock(sourceManagedFamily, waterLevel)
+                // Preserve managed family even when owner tracing is transiently unavailable.
+                // We intentionally skip ownership assignment in this path (ownerControllerId remains null).
+                fillBlock = ResolveManagedStillBlock(sourceManagedFamily, waterLevel)
+                    ?? ResolveVanillaStillBlock(sourceManagedFamily, waterLevel)
                     ?? ResolveVanillaStillBlockFromFluid(currentFluid, waterLevel)
                     ?? ResolveVanillaStillBlockFromFluid(sourceFluid, waterLevel);
                 return fillBlock != null;
@@ -287,7 +290,6 @@ namespace HardcoreWater.Compat
                         managedFamilyId = cachedFamilyId;
                         return true;
                     }
-
                     return false;
                 }
 
