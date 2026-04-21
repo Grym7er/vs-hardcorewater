@@ -34,6 +34,12 @@ namespace HardcoreWater.ModBlockEntity
                 return blockWater.LiquidLevel >= minLevel;
 			}
 
+            if (HardcoreWaterModSystem.ArchimedesCompat != null &&
+                HardcoreWaterModSystem.ArchimedesCompat.IsManagedSourceBlock(block))
+            {
+                return block.LiquidLevel >= minLevel;
+            }
+
             return false;
 		}
 
@@ -94,7 +100,7 @@ namespace HardcoreWater.ModBlockEntity
         {
             Block mostSolidBlock = this.Api.World.BlockAccessor.GetMostSolidBlock(blockPos.DownCopy());
 
-            if (mostSolidBlock is BlockAqueduct blockAqueduct) return true;
+            if (mostSolidBlock is IAqueduct) return true;
 
             bool isSolidTop = (double)mostSolidBlock.GetLiquidBarrierHeightOnSide(BlockFacing.UP, blockPos.DownCopy()) >= 1.0;
 
@@ -173,7 +179,7 @@ namespace HardcoreWater.ModBlockEntity
                 {
                     hasSource = true; // Contains source block or source block is in unloaded chunk
                 }
-                else if (IsValidWaterSource(this.WaterSourcePos) && DoesBlockBelowPosHaveUpSolidFaceOrAqueduct(this.WaterSourcePos) || unloadedWaterSource)
+                else if (IsValidWaterSource(this.WaterSourcePos) || unloadedWaterSource)
                 {
                     hasSource = true; // Connected to source block or source block is in unloaded chunk
                 }

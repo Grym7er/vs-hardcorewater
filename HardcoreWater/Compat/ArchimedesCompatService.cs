@@ -209,6 +209,16 @@ namespace HardcoreWater.Compat
             return assigned;
         }
 
+        public bool IsManagedSourceBlock(Block fluid)
+        {
+            if (!IsActive || fluid == null || fluid.BlockId == 0)
+            {
+                return false;
+            }
+
+            return IsArchimedesSourceBlock(fluid);
+        }
+
         public void LogDebugSummaryIfNeeded()
         {
             if (!IsActive)
