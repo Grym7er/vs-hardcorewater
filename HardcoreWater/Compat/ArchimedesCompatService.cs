@@ -49,32 +49,32 @@ namespace HardcoreWater.Compat
             bool isLegacyInstalled = api.ModLoader.IsModEnabled(ArchimedesLegacyModId);
             if (!isPrimaryInstalled && !isLegacyInstalled)
             {
-                api.Logger.Notification("[hardcorewater] Archimedes compatibility inactive: mod not installed.");
+                api.Logger.Notification("[hardcorewaterforked] Archimedes compatibility inactive: mod not installed.");
                 return null;
             }
 
             Type modSystemType = ResolveType(ArchimedesModSystemTypeName);
             if (modSystemType == null)
             {
-                api.Logger.Warning("[hardcorewater] Archimedes compatibility inactive: mod system type not found.");
+                api.Logger.Warning("[hardcorewaterforked] Archimedes compatibility inactive: mod system type not found.");
                 return null;
             }
 
             if (!TryResolveModSystem(api, modSystemType, out object modSystem, out string resolveReason))
             {
-                api.Logger.Warning("[hardcorewater] Archimedes compatibility inactive: {0}", resolveReason);
+                api.Logger.Warning("[hardcorewaterforked] Archimedes compatibility inactive: {0}", resolveReason);
                 return null;
             }
 
             var service = new ArchimedesCompatService(api, modSystem);
             if (!service.TryBindWaterManagerContract(out string bindReason))
             {
-                api.Logger.Warning("[hardcorewater] Archimedes compatibility inactive: {0}", bindReason);
+                api.Logger.Warning("[hardcorewaterforked] Archimedes compatibility inactive: {0}", bindReason);
                 return null;
             }
 
             service.IsActive = true;
-            api.Logger.Notification("[hardcorewater] Archimedes compatibility active.");
+            api.Logger.Notification("[hardcorewaterforked] Archimedes compatibility active.");
             return service;
         }
 
@@ -91,7 +91,7 @@ namespace HardcoreWater.Compat
             {
                 if (TryBindWaterManagerContract(out string reason))
                 {
-                    api.Logger.Notification("[hardcorewater] Archimedes compatibility rebound after WaterManager refresh.");
+                    api.Logger.Notification("[hardcorewaterforked] Archimedes compatibility rebound after WaterManager refresh.");
                 }
                 else
                 {
@@ -228,7 +228,7 @@ namespace HardcoreWater.Compat
 
             // Low-noise one-line operational summary useful during soak tests.
             api.Logger.Debug(
-                "[hardcorewater] [compat/archimedes] counters managedRefillOverrides={0}, ownerTraceResolved={1}, ownerTraceFailed={2}, outletOwnershipAssignments={3}, unresolvedOwnerFallbacks={4}",
+                "[hardcorewaterforked] [compat/archimedes] counters managedRefillOverrides={0}, ownerTraceResolved={1}, ownerTraceFailed={2}, outletOwnershipAssignments={3}, unresolvedOwnerFallbacks={4}",
                 managedRefillOverrides,
                 ownerTraceResolved,
                 ownerTraceFailed,
@@ -503,7 +503,7 @@ namespace HardcoreWater.Compat
             }
 
             IsActive = false;
-            api.Logger.Warning("[hardcorewater] Archimedes compatibility disabled at runtime: {0}", reason);
+            api.Logger.Warning("[hardcorewaterforked] Archimedes compatibility disabled at runtime: {0}", reason);
         }
 
         private bool TryBindWaterManagerContract(out string reason)

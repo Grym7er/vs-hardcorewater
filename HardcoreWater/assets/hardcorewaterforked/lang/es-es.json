@@ -1,6 +1,6 @@
 {
   "_comentarios": "Traducido por C4BR3R4 || Versión del Mod: 1.3.2 || Fecha de la última modificación: 20250210 || Registro: http://c4br3r4.es/index.php?topic=1296.0 ",
-  "game:tabname-hardcorewater": "Hardcore Water",
+  "game:tabname-hardcorewaterforked": "Hardcore Water",
   "craftinginfo-aqueducts-title": "Mecánica de Mod ► Acueductos",
   "craftinginfo-aqueducts-text": "<strong>Acueductos</strong><br><i>Los acueductos pueden utilizarse para transportar agua a grandes distancias.</i><br><br>Los tramos de <a href='handbooksearch://acueducto'>Acueducto</a> deben colocarse junto a una fuente de agua, con uno de los lados abiertos orientado hacia la fuente. Se pueden colocar más tramos, que crearán agua no procedente de la fuente, siempre que no se retire el bloque de la fuente original ni se desconecten los tramos de acueducto.",
 
@@ -22,6 +22,8 @@
   "block-aqueduct-pine*": "Acueducto de Pino",
   "block-aqueduct-purpleheart*": "Acueducto de Corazón Púrpura",
   "block-aqueduct-redwood*": "Acueducto de Secuoya",
+  "block-aqueduct-rotten*": "Acueducto de madera podrida sin corteza",
+  "block-aqueduct-veryrotten*": "Acueducto de madera muy podrida sin corteza",
   "block-aqueduct-veryagedrotten*": "Acueducto de Madera Podrida",
   "block-aqueduct-veryaged*": "Acueducto de Madera Muy Envejecida",
   "block-aqueduct-walnut*": "Acueducto de Nogal",

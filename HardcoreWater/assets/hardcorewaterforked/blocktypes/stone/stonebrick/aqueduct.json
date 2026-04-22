@@ -5,14 +5,14 @@
 	"drops": [
 		{
 			"type": "block",
-			"code": "aqueduct-{wood}-none-ns",
+			"code": "aqueduct-{rock}-none-ns",
 			"quantity": { "avg": 1 }
 		}
 	],
 	"attributes": {
 		"handbook": {
 			"groupBy": [
-				"aqueduct-{wood}-none-*"
+				"aqueduct-{rock}-none-*"
 			]
 		},
 		"liquidBarrierOnSidesByType": {
@@ -28,13 +28,13 @@
 	},
 	"variantgroups": [
 		{
-			"code": "wood",
+			"code": "rock",
 			"states": [
-				"aged",
-				"veryaged",
-				"veryagedrotten"
-			],
-			"loadFromPropertiesCombine": [ "game:block/wood" ]
+				"limestone",
+				"sandstone",
+				"basalt",
+				"granite"
+			]
 		},
 		{
 			"code": "connections",
@@ -63,45 +63,45 @@
 		"terrain": [
 			"*-none-ns"
 		],
-		"hardcorewater": [
+		"hardcorewaterforked": [
 			"*-none-ns"
 		]
 	},
 	"shapeByType": {
 		"*-none-ns": {
-			"base": "block/wood/aqueduct_ns",
+			"base": "block/stone/stonebrick/aqueduct_ns",
 			"rotateY": 0
 		},
 		"*-w-ns": {
-			"base": "block/wood/aqueduct_nes",
+			"base": "block/stone/stonebrick/aqueduct_nes",
 			"rotateY": 180
 		},
 		"*-we-ns": {
-			"base": "block/wood/aqueduct_nesw",
+			"base": "block/stone/stonebrick/aqueduct_nesw",
 			"rotateY": 0
 		},
 		"*-e-ns": {
-			"base": "block/wood/aqueduct_nes",
+			"base": "block/stone/stonebrick/aqueduct_nes",
 			"rotateY": 0
 		},
 		"*-none-we": {
-			"base": "block/wood/aqueduct_ns",
+			"base": "block/stone/stonebrick/aqueduct_ns",
 			"rotateY": 90
 		},
 		"*-s-we": {
-			"base": "block/wood/aqueduct_nes",
+			"base": "block/stone/stonebrick/aqueduct_nes",
 			"rotateY": 270
 		},
 		"*-n-we": {
-			"base": "block/wood/aqueduct_nes",
+			"base": "block/stone/stonebrick/aqueduct_nes",
 			"rotateY": 90
 		},
 		"*-ns-we": {
-			"base": "block/wood/aqueduct_nesw",
+			"base": "block/stone/stonebrick/aqueduct_nesw",
 			"rotateY": 90
 		}
 	},
-	"blockmaterial": "Wood",
+	"blockmaterial": "Stone",
 	"sideOpaqueByType": {
 		"*-none-ns": {
 			"up": false,
@@ -293,18 +293,15 @@
 	"lightAbsorption": 99,
 	"textures": {
 		"all": {
-			"base": "game:block/wood/debarked/{wood}"
+			"base": "game:block/stone/brick/{rock}*"
 		}
 	},
 	"sounds": {
-		"place": "game:block/planks",
-		"walk": "game:walk/wood",
-		"hit": "game:block/planks",
-		"break": "game:block/planks",
+		"walk": "game:walk/stone",
 		"byTool": {
-			"Axe": {
-				"hit": "game:block/chop",
-				"break": "game:block/planks"
+			"Pickaxe": {
+				"hit": "game:block/rock-hit-pickaxe",
+				"break": "game:block/rock-break-pickaxe"
 			}
 		}
 	},

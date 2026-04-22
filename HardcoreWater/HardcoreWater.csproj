@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
     <VintageStoryPath Condition="'$(VINTAGE_STORY)' != ''">$(VINTAGE_STORY)</VintageStoryPath>
@@ -44,13 +44,13 @@
     <Content Include="assets\**">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="assets\hardcorewater\blocktypes\stone\stonebrick\enclosedaqueduct.json" />
-    <None Remove="assets\hardcorewater\blocktypes\wood\woodtyped\aqueduct.json" />
-    <None Remove="assets\hardcorewater\config\handbook\aqueducts.json" />
-    <None Remove="assets\hardcorewater\lang\en.json" />
-    <None Remove="assets\hardcorewater\recipes\grid\aqueduct.json" />
-    <None Remove="assets\hardcorewater\recipes\grid\enclosedaqueduct.json" />
-    <None Remove="assets\hardcorewater\recipes\grid\woodaqueduct.json" />
+    <None Remove="assets\hardcorewaterforked\blocktypes\stone\stonebrick\enclosedaqueduct.json" />
+    <None Remove="assets\hardcorewaterforked\blocktypes\wood\woodtyped\aqueduct.json" />
+    <None Remove="assets\hardcorewaterforked\config\handbook\aqueducts.json" />
+    <None Remove="assets\hardcorewaterforked\lang\en.json" />
+    <None Remove="assets\hardcorewaterforked\recipes\grid\aqueduct.json" />
+    <None Remove="assets\hardcorewaterforked\recipes\grid\enclosedaqueduct.json" />
+    <None Remove="assets\hardcorewaterforked\recipes\grid\woodaqueduct.json" />
     <Content Include="modinfo.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

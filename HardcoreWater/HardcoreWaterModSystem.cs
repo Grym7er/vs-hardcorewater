@@ -85,7 +85,7 @@ namespace HardcoreWater
         public override void StartServerSide(ICoreServerAPI sapi)
         {
             // Create server channel for config data sync before subscribing to events that use it
-            this.serverChannel = sapi.Network.RegisterChannel("hardcorewater")
+            this.serverChannel = sapi.Network.RegisterChannel("hardcorewaterforked")
                 .RegisterMessageType<SyncConfigClientPacket>()
                 .SetMessageHandler<SyncConfigClientPacket>((player, packet) => {});
 
@@ -111,7 +111,7 @@ namespace HardcoreWater
         public override void StartClientSide(ICoreClientAPI capi)
         {
             // Sync config settings with clients
-            capi.Network.RegisterChannel("hardcorewater")
+            capi.Network.RegisterChannel("hardcorewaterforked")
                 .RegisterMessageType<SyncConfigClientPacket>()
                 .SetMessageHandler<SyncConfigClientPacket>(p => {
                     this.Mod.Logger.Event("Received config settings from server");
@@ -212,7 +212,7 @@ namespace HardcoreWater
 
             if (original == null || prefix == null)
             {
-                sapi.Logger.Warning("[hardcorewater] Skipped patch for BlockBehaviorFiniteSpreadingLiquid.TryLoweringLiquidLevel. Method lookup failed for current game version.");
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped patch for BlockBehaviorFiniteSpreadingLiquid.TryLoweringLiquidLevel. Method lookup failed for current game version.");
                 return;
             }
 
@@ -244,7 +244,7 @@ namespace HardcoreWater
 
             if (original == null || postfix == null)
             {
-                sapi.Logger.Warning("[hardcorewater] Skipped patch for BlockBehaviorFiniteSpreadingLiquid.FindDownwardPaths. Method lookup failed for current game version.");
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped patch for BlockBehaviorFiniteSpreadingLiquid.FindDownwardPaths. Method lookup failed for current game version.");
                 return;
             }
 

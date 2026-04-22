@@ -43,7 +43,7 @@ public class BuildContext : FrostingContext
 public class LocalModInfo
 {
     [JsonProperty("modid")]
-    public string ModId { get; set; } = "hardcorewater";
+    public string ModId { get; set; } = "hardcorewaterforked";
 
     [JsonProperty("version")]
     public string Version { get; set; } = "0.0.0";

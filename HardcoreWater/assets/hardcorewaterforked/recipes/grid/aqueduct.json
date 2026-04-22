@@ -16,7 +16,7 @@
   "height": 2,
   "output": {
     "type": "block",
-    "code": "hardcorewater:aqueduct-{rock}-none-ns",
+    "code": "hardcorewaterforked:aqueduct-{rock}-none-ns",
     "quantity": 3
   }
 }
