@@ -33,8 +33,7 @@
 				"aged",
 				"veryaged",
 				"rotten",
-				"veryrotten",
-				"veryagedrotten"
+				"veryrotten"
 			],
 			"loadFromPropertiesCombine": [ "game:block/wood" ]
 		},
