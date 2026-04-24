@@ -1,6 +1,7 @@
 using HardcoreWater;
 using HardcoreWater.ModBlock;
 using System;
+using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -10,7 +11,8 @@ namespace HardcoreWater.ModBlockEntity
 {
     public class BlockEntityAqueduct : BlockEntity
 	{
-        private const int MaxAqueductSourceChainDepth = 32;
+        /// <summary>Last-resort bound so a pathological WaterSourcePos graph cannot freeze a tick; legitimate chains stop at terminal or cycle first.</summary>
+        private const int MaxRapidsSourceChainHops = 1_000_000;
         private const float ReacquireTimeoutSeconds = 3f;
 
         private int GetReacquireTimeoutTicks()
@@ -129,39 +131,54 @@ namespace HardcoreWater.ModBlockEntity
         /// <summary>
         /// True if this segment should carry vanilla rapids: enabled in config, terminal fresh source in the chain is rapidwater-*,
         /// and the chain does not end on Archimedes / salt / boiling (prefer-normal reduces to terminal for single WaterSourcePos).
+        /// Walks upstream along WaterSourcePos through aqueduct BEs; stops on cycle (returns false) or nuclear hop limit.
         /// </summary>
-        private bool ResolveCarriesRapidsFromSourceChain(BlockPos src, int depth)
+        private bool ResolveCarriesRapidsFromSourceChain(BlockPos src)
         {
-            if (!HardcoreWaterConfig.Loaded.EnableAqueductRapids || src == null || depth > MaxAqueductSourceChainDepth)
+            if (!HardcoreWaterConfig.Loaded.EnableAqueductRapids || src == null)
             {
                 return false;
             }
 
             IWorldAccessor world = this.Api.World;
-            if (world.BlockAccessor.GetChunkAtBlockPos(src) == null)
+            var visited = new HashSet<(int x, int y, int z, int dim)>();
+            BlockPos current = src;
+            for (int hop = 0; hop < MaxRapidsSourceChainHops; hop++)
             {
-                return false;
-            }
-
-            Block solid = world.BlockAccessor.GetBlock(src, BlockLayersAccess.Solid);
-            if (solid is IAqueduct)
-            {
-                if (src.Equals(this.Pos))
+                if (world.BlockAccessor.GetChunkAtBlockPos(current) == null)
                 {
-                    return IsFreshRapidTerminalFluid(world.BlockAccessor.GetBlock(src, BlockLayersAccess.Fluid));
+                    return false;
                 }
 
-                if (world.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(src) is BlockEntityAqueduct other &&
-                    other.HasWaterSource &&
-                    other.WaterSourcePos != null)
+                (int x, int y, int z, int dim) key = (current.X, current.Y, current.Z, current.dimension);
+                if (!visited.Add(key))
                 {
-                    return ResolveCarriesRapidsFromSourceChain(other.WaterSourcePos, depth + 1);
+                    return false;
                 }
 
-                return false;
+                Block solid = world.BlockAccessor.GetBlock(current, BlockLayersAccess.Solid);
+                if (solid is IAqueduct)
+                {
+                    if (current.Equals(this.Pos))
+                    {
+                        return IsFreshRapidTerminalFluid(world.BlockAccessor.GetBlock(current, BlockLayersAccess.Fluid));
+                    }
+
+                    if (world.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(current) is BlockEntityAqueduct other &&
+                        other.HasWaterSource &&
+                        other.WaterSourcePos != null)
+                    {
+                        current = other.WaterSourcePos;
+                        continue;
+                    }
+
+                    return false;
+                }
+
+                return IsFreshRapidTerminalFluid(world.BlockAccessor.GetBlock(current, BlockLayersAccess.Fluid));
             }
 
-            return IsFreshRapidTerminalFluid(world.BlockAccessor.GetBlock(src, BlockLayersAccess.Fluid));
+            return false;
         }
 
         private bool IsFreshRapidTerminalFluid(Block fluid)
@@ -262,7 +279,7 @@ namespace HardcoreWater.ModBlockEntity
             {
                 bool wantsRapid = !compatResolved
                     && this.WaterSourcePos != null
-                    && this.ResolveCarriesRapidsFromSourceChain(this.WaterSourcePos, 0);
+                    && this.ResolveCarriesRapidsFromSourceChain(this.WaterSourcePos);
                 this.CarriesRapids = wantsRapid;
                 int lvl = Math.Min(7, this.WaterLevel);
                 string lvlStr = lvl.ToString();
