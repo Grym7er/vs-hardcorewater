@@ -1,3 +1,4 @@
+using HardcoreWater;
 using HardcoreWater.ModBlock;
 using System;
 using Vintagestory.API.Common;
@@ -9,6 +10,7 @@ namespace HardcoreWater.ModBlockEntity
 {
     public class BlockEntityAqueduct : BlockEntity
 	{
+        private const int MaxAqueductSourceChainDepth = 32;
         private const float ReacquireTimeoutSeconds = 3f;
 
         private int GetReacquireTimeoutTicks()
@@ -107,6 +109,211 @@ namespace HardcoreWater.ModBlockEntity
             return isSolidTop;
         }
 
+        private static bool IsRapidWaterCodePath(Block block)
+        {
+            return block?.Code?.Path != null && block.Code.Path.StartsWith("rapidwater");
+        }
+
+        private static bool IsSaltOrBoilingFluid(Block block)
+        {
+            if (block?.Code == null)
+            {
+                return false;
+            }
+
+            return (block.Code.Path != null && block.Code.Path.Contains("saltwater"))
+                || block.Code.BeginsWith("game", "salt")
+                || block.Code.BeginsWith("game", "boiling");
+        }
+
+        /// <summary>
+        /// True if this segment should carry vanilla rapids: enabled in config, terminal fresh source in the chain is rapidwater-*,
+        /// and the chain does not end on Archimedes / salt / boiling (prefer-normal reduces to terminal for single WaterSourcePos).
+        /// </summary>
+        private bool ResolveCarriesRapidsFromSourceChain(BlockPos src, int depth)
+        {
+            if (!HardcoreWaterConfig.Loaded.EnableAqueductRapids || src == null || depth > MaxAqueductSourceChainDepth)
+            {
+                return false;
+            }
+
+            IWorldAccessor world = this.Api.World;
+            if (world.BlockAccessor.GetChunkAtBlockPos(src) == null)
+            {
+                return false;
+            }
+
+            Block solid = world.BlockAccessor.GetBlock(src, BlockLayersAccess.Solid);
+            if (solid is IAqueduct)
+            {
+                if (src.Equals(this.Pos))
+                {
+                    return IsFreshRapidTerminalFluid(world.BlockAccessor.GetBlock(src, BlockLayersAccess.Fluid));
+                }
+
+                if (world.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(src) is BlockEntityAqueduct other &&
+                    other.HasWaterSource &&
+                    other.WaterSourcePos != null)
+                {
+                    return ResolveCarriesRapidsFromSourceChain(other.WaterSourcePos, depth + 1);
+                }
+
+                return false;
+            }
+
+            return IsFreshRapidTerminalFluid(world.BlockAccessor.GetBlock(src, BlockLayersAccess.Fluid));
+        }
+
+        private bool IsFreshRapidTerminalFluid(Block fluid)
+        {
+            if (fluid == null || fluid.BlockId == 0 || fluid.Code?.Path == null)
+            {
+                return false;
+            }
+
+            if (IsSaltOrBoilingFluid(fluid))
+            {
+                return false;
+            }
+
+            if (HardcoreWaterModSystem.ArchimedesCompat != null &&
+                HardcoreWaterModSystem.ArchimedesCompat.IsManagedSourceBlock(fluid))
+            {
+                return false;
+            }
+
+            return IsRapidWaterCodePath(fluid);
+        }
+
+        /// <summary>
+        /// Horizontal flow letter for game:rapidwater-{letter}-{level}. Vertical/same-cell sources use stable downstream toward blockPosFB[1] (south for NS, east for WE).
+        /// </summary>
+        private char ResolveRapidFlowLetter(BlockPos waterSourcePos)
+        {
+            bool trenchNs = BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation) == BlockFacing.NORTH;
+            int ddx = this.Pos.X - waterSourcePos.X;
+            int ddz = this.Pos.Z - waterSourcePos.Z;
+            bool sameColumn = ddx == 0 && ddz == 0;
+
+            if (sameColumn || waterSourcePos.Equals(this.Pos))
+            {
+                return trenchNs ? 's' : 'e';
+            }
+
+            if (trenchNs)
+            {
+                if (ddz != 0)
+                {
+                    return ddz > 0 ? 's' : 'n';
+                }
+
+                return 's';
+            }
+
+            if (ddx != 0)
+            {
+                return ddx > 0 ? 'e' : 'w';
+            }
+
+            return 'e';
+        }
+
+        private void TryApplyAqueductFluidFill(BlockPos[] blockPosFB, ref bool shouldMarkDirty, ref bool shouldTriggerNeighborUpdate)
+        {
+            if (!this.HasWaterSource || this.WaterSourcePos == null || HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
+            {
+                return;
+            }
+
+            // Handle fresh, salt, and boiling water separately, lest we desalinate or something else weird
+            Block ourBlockFluid = this.Api.World.BlockAccessor.GetBlock(this.Pos, BlockLayersAccess.Fluid);
+            Block liquidBlockToSet;
+            string ownerControllerId = null;
+            string managedFamilyId = null;
+            Block compatBlock = null;
+            bool compatResolved = false;
+            if (HardcoreWaterModSystem.ArchimedesCompat != null)
+            {
+                compatResolved = HardcoreWaterModSystem.ArchimedesCompat.TryResolveAqueductFill(
+                    this,
+                    ourBlockFluid,
+                    Math.Min(7, this.WaterLevel),
+                    out compatBlock,
+                    out ownerControllerId,
+                    out managedFamilyId);
+            }
+
+            if (compatResolved && compatBlock != null)
+            {
+                liquidBlockToSet = compatBlock;
+                this.CarriesRapids = false;
+            }
+            else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
+            {
+                liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-" + Math.Min(7, this.WaterLevel)));
+                this.CarriesRapids = false;
+            }
+            else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "boiling"))
+            {
+                liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-" + Math.Min(7, this.WaterLevel)));
+                this.CarriesRapids = false;
+            }
+            else
+            {
+                bool wantsRapid = !compatResolved
+                    && this.WaterSourcePos != null
+                    && this.ResolveCarriesRapidsFromSourceChain(this.WaterSourcePos, 0);
+                this.CarriesRapids = wantsRapid;
+                int lvl = Math.Min(7, this.WaterLevel);
+                string lvlStr = lvl.ToString();
+                if (wantsRapid)
+                {
+                    char flow = this.ResolveRapidFlowLetter(this.WaterSourcePos);
+                    liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:rapidwater-" + flow + "-" + lvlStr));
+                    if (liquidBlockToSet == null)
+                    {
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + lvlStr));
+                        this.CarriesRapids = false;
+                    }
+                }
+                else
+                {
+                    liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + lvlStr));
+                }
+            }
+
+            bool hasFluidCodePath = ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.Path != null;
+            bool notIced = !hasFluidCodePath || !ourBlockFluid.Code.Path.Contains("ice");
+            // Vanilla updateOwnFlowDir keeps rewriting rapid flow variant (still / n / e / w / d). Forcing our axis letter
+            // every tick causes BlockId churn and visible oscillation (logs: cur still/e/d vs stable tgt rapidwater-w-6).
+            int targetHeight = Math.Min(7, this.WaterLevel);
+            bool skipRapidVariantReplace = this.CarriesRapids
+                && ourBlockFluid != null
+                && IsRapidWaterCodePath(ourBlockFluid)
+                && ourBlockFluid.LiquidLevel == targetHeight;
+            bool shouldReplaceFluid = ourBlockFluid != null && liquidBlockToSet != null && notIced
+                && (ourBlockFluid.LiquidLevel < this.WaterLevel
+                    || (!skipRapidVariantReplace && ourBlockFluid.BlockId != liquidBlockToSet.BlockId));
+            if (shouldReplaceFluid)
+            {
+                this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
+                if (!string.IsNullOrEmpty(ownerControllerId) &&
+                    !string.IsNullOrEmpty(managedFamilyId) &&
+                    HardcoreWaterModSystem.ArchimedesCompat != null)
+                {
+                    HardcoreWaterModSystem.ArchimedesCompat.TryAssignOutletOwnership(
+                        this,
+                        new[] { this.Pos, blockPosFB[0], blockPosFB[1] },
+                        ownerControllerId,
+                        managedFamilyId
+                    );
+                }
+
+                shouldTriggerNeighborUpdate = true;
+                shouldMarkDirty = true;
+            }
+        }
+
         private bool HasOpenOutletToAir(BlockPos[] blockPosFB)
         {
             foreach (BlockPos endPos in blockPosFB)
@@ -137,6 +344,7 @@ namespace HardcoreWater.ModBlockEntity
             bool oldHasWaterSource = this.HasWaterSource;
             BlockPos oldWaterSourcePos = this.WaterSourcePos;
             int oldWaterLevelState = this.WaterLevel;
+            bool oldCarriesRapids = this.CarriesRapids;
 
             if (this.blockAqueduct == null)
                 return;
@@ -164,6 +372,7 @@ namespace HardcoreWater.ModBlockEntity
                     // Persisted state invariant guard: a source flag without source position is invalid.
                     bool hadSource = this.HasWaterSource;
                     this.HasWaterSource = false;
+                    this.CarriesRapids = false;
                     this.WaterSourceReacquireTimeout = GetReacquireTimeoutTicks();
                     shouldMarkDirty = hadSource;
                     if (shouldMarkDirty)
@@ -202,12 +411,17 @@ namespace HardcoreWater.ModBlockEntity
 
                 if (!hasSource || HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
 				{
-                    bool stateChanged = this.HasWaterSource || this.WaterSourcePos != null || this.WaterSourceReacquireTimeout != GetReacquireTimeoutTicks();
+                    bool stateChanged = this.HasWaterSource || this.WaterSourcePos != null || this.WaterSourceReacquireTimeout != GetReacquireTimeoutTicks() || this.CarriesRapids;
                     this.WaterSourceReacquireTimeout = GetReacquireTimeoutTicks();
                     this.HasWaterSource = false;
                     this.WaterSourcePos = null;
+                    this.CarriesRapids = false;
                     shouldMarkDirty = shouldMarkDirty || stateChanged;
 				}
+                else
+                {
+                    this.TryApplyAqueductFluidFill(blockPosFB, ref shouldMarkDirty, ref shouldTriggerNeighborUpdate);
+                }
 			}
 			else
 			{
@@ -308,61 +522,7 @@ namespace HardcoreWater.ModBlockEntity
 
 				if (hasSource)
 				{
-                    // Handle fresh, salt, and boiling water separately, lest we desalinate or something else weird
-                    Block ourBlockFluid = this.Api.World.BlockAccessor.GetBlock(this.Pos, BlockLayersAccess.Fluid);
-                    Block liquidBlockToSet;
-                    string ownerControllerId = null;
-                    string managedFamilyId = null;
-                    Block compatBlock = null;
-                    bool compatResolved = false;
-                    if (HardcoreWaterModSystem.ArchimedesCompat != null)
-                    {
-                        compatResolved = HardcoreWaterModSystem.ArchimedesCompat.TryResolveAqueductFill(
-                            this,
-                            ourBlockFluid,
-                            Math.Min(7, this.WaterLevel),
-                            out compatBlock,
-                            out ownerControllerId,
-                            out managedFamilyId);
-                    }
-                    if (compatResolved && compatBlock != null)
-                    {
-                        liquidBlockToSet = compatBlock;
-                    }
-                    else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
-                    {
-                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-" + Math.Min(7, this.WaterLevel)));
-                    }
-                    else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "boiling"))
-                    {
-                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-" + Math.Min(7, this.WaterLevel)));
-                    }
-                    else
-                    {
-                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + Math.Min(7, this.WaterLevel)));
-                    }
-
-                    bool hasFluidCodePath = ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.Path != null;
-                    bool notIced = !hasFluidCodePath || !ourBlockFluid.Code.Path.Contains("ice");
-                    if (ourBlockFluid != null && liquidBlockToSet != null && notIced && ourBlockFluid.LiquidLevel < this.WaterLevel && !HasInvalidSourceDependency(blockPosFB[0], blockPosFB[1]))
-                    {
-                        this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
-                        if (!string.IsNullOrEmpty(ownerControllerId) &&
-                            !string.IsNullOrEmpty(managedFamilyId) &&
-                            HardcoreWaterModSystem.ArchimedesCompat != null)
-                        {
-                            // Strict-ownership path: this segment and source-height outflow cells retain controller ownership.
-                            HardcoreWaterModSystem.ArchimedesCompat.TryAssignOutletOwnership(
-                                this,
-                                new[] { this.Pos, blockPosFB[0], blockPosFB[1] },
-                                ownerControllerId,
-                                managedFamilyId
-                            );
-                        }
-
-                        shouldTriggerNeighborUpdate = true;
-                        shouldMarkDirty = true;
-                    }
+                    this.TryApplyAqueductFluidFill(blockPosFB, ref shouldMarkDirty, ref shouldTriggerNeighborUpdate);
                 }
 				else
 				{
@@ -373,6 +533,8 @@ namespace HardcoreWater.ModBlockEntity
                         shouldTriggerNeighborUpdate = true;
                         shouldMarkDirty = true;
                     }
+
+                    this.CarriesRapids = false;
                 }
             }
 
@@ -382,7 +544,7 @@ namespace HardcoreWater.ModBlockEntity
             }
             bool sourcePosChanged = (oldWaterSourcePos == null) != (this.WaterSourcePos == null)
                 || (oldWaterSourcePos != null && !oldWaterSourcePos.Equals(this.WaterSourcePos));
-            if (oldHasWaterSource != this.HasWaterSource || oldWaterLevelState != this.WaterLevel || sourcePosChanged)
+            if (oldHasWaterSource != this.HasWaterSource || oldWaterLevelState != this.WaterLevel || sourcePosChanged || oldCarriesRapids != this.CarriesRapids)
             {
                 shouldMarkDirty = true;
             }
@@ -412,7 +574,8 @@ namespace HardcoreWater.ModBlockEntity
 			base.ToTreeAttributes(tree);
 			tree.SetInt("WaterLevel", this.WaterLevel);
             tree.SetInt("WaterSourceReacquireTimeout", this.WaterSourceReacquireTimeout);
-            tree.SetBool("HasWaterSource", this.HasWaterSource);
+			tree.SetBool("HasWaterSource", this.HasWaterSource);
+            tree.SetBool("CarriesRapids", this.CarriesRapids);
 			if (this.HasWaterSource)
 				tree.SetBlockPos("WaterSourcePos", this.WaterSourcePos);
 		}
@@ -423,6 +586,7 @@ namespace HardcoreWater.ModBlockEntity
 			this.WaterLevel = tree.GetInt("WaterLevel");
             this.WaterSourceReacquireTimeout = tree.GetInt("WaterSourceReacquireTimeout", 0);
             this.HasWaterSource = tree.GetBool("HasWaterSource", false);
+            this.CarriesRapids = tree.GetBool("CarriesRapids", false);
             this.WaterSourcePos = tree.GetBlockPos("WaterSourcePos", null);
 
             // Normalize deserialized invariants for older saves.
@@ -441,6 +605,9 @@ namespace HardcoreWater.ModBlockEntity
 		public BlockPos WaterSourcePos { get; set; } = null;
 
         public bool HasWaterSource { get; set; } = false;
+
+        /// <summary>Whether this segment last resolved to carrying vanilla rapids (persisted; refreshed while supplied).</summary>
+        public bool CarriesRapids { get; private set; } = false;
 
         private int WaterSourceReacquireTimeout = 0;
 	}

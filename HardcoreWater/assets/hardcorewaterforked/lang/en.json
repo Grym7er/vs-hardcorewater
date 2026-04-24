@@ -1,7 +1,7 @@
 {
   "game:tabname-hardcorewaterforked": "Hardcore Water",
   "craftinginfo-aqueducts-title": "Game Mechanic: Aqueducts",
-  "craftinginfo-aqueducts-text": "<strong>Aqueducts</strong><br><i>Aqueducts can be used to transport water long distances.</i><br><br><a href=\"handbooksearch://aqueduct\">Aqueduct sections</a> must be placed adjacent to a water source, with one of the open sides facing the source. Further sections can be placed and will create non-source water provided that the original source block is not removed nor the sections disconnected.",
+  "craftinginfo-aqueducts-text": "<strong>Aqueducts</strong><br><i>Aqueducts can be used to transport water long distances.</i><br><br><a href=\"handbooksearch://aqueduct\">Aqueduct sections</a> must be placed adjacent to a water source, with one of the open sides facing the source. Further sections can be placed and will create non-source water provided that the original source block is not removed nor the sections disconnected.<br><br><strong>Rapids</strong><br>When the supply chain resolves entirely to vanilla rapids (<i>rapidwater</i>), the channel carries directional rapids aligned to the run. If any feeder in that chain is ordinary fresh water, the channel stays ordinary water (prefer-normal). T- and cross-shaped sections may not pick a single flow direction; use straight runs for predictable rapids. Toggle <i>EnableAqueductRapids</i> in the mod config to disable this behavior.<br><br>Vanilla water wheels still replace rapids where they touch the wheel; that is unchanged.",
 
   "block-aqueduct-limestone*": "Limestone aqueduct section",
   "block-aqueduct-sandstone*": "Sandstone aqueduct section",

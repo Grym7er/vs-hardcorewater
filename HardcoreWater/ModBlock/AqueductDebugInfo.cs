@@ -24,11 +24,12 @@ namespace HardcoreWater.ModBlock
             }
 
             StringBuilder dsc = new StringBuilder();
-            dsc.AppendLine(Lang.Get("Water Level: {0}, Source Position: {1}, Current Position: {2}", new object[]
+            dsc.AppendLine(Lang.Get("Water Level: {0}, Source Position: {1}, Current Position: {2}, Carries rapids: {3}", new object[]
                 {
                     blockEntityAqueduct.WaterLevel,
                     blockEntityAqueduct.WaterSourcePos != null ? blockEntityAqueduct.WaterSourcePos.ToLocalPosition(api).ToString() : "null",
-                    pos.ToLocalPosition(api).ToString()
+                    pos.ToLocalPosition(api).ToString(),
+                    blockEntityAqueduct.CarriesRapids
                 }));
 
             if (world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid) is Block fluidBlock)

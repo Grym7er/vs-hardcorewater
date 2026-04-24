@@ -96,7 +96,7 @@ namespace HardcoreWater
 
 				PatchBlockBehaviorFiniteSpreadingLiquidTryLoweringLiquidLevel(sapi, harmonyInst);
 
-                //PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(sapi, harmonyInst);
+                PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(sapi, harmonyInst);
 
                 PatchBlockBehaviorFiniteSpreadingLiquidFindDownwardPaths(sapi, harmonyInst);
             }
@@ -221,19 +221,28 @@ namespace HardcoreWater
 			sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.TryLoweringLiquidLevel from Hardcore Water!");		
 		}
 
-        /*
         internal void PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(ICoreServerAPI sapi, Harmony harmony)
         {
-            var original = typeof(BlockBehaviorFiniteSpreadingLiquid).GetMethod("CanSpreadIntoBlock", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new Type[] {
-                    typeof(Block),  typeof(Block), typeof(BlockPos), typeof(BlockPos), typeof(BlockFacing), typeof(IWorldAccessor)             
-                });
-            var prefix = typeof(PatchBlockBehaviorFiniteSpreadingLiquid).GetMethod("PrefixCanSpreadIntoBlock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            MethodInfo original = typeof(BlockBehaviorFiniteSpreadingLiquid).GetMethod(
+                nameof(BlockBehaviorFiniteSpreadingLiquid.CanSpreadIntoBlock),
+                BindingFlags.Public | BindingFlags.Instance,
+                null,
+                new[] { typeof(Block), typeof(Block), typeof(BlockPos), typeof(BlockPos), typeof(BlockFacing), typeof(IWorldAccessor) },
+                null);
+            MethodInfo postfix = typeof(PatchBlockBehaviorFiniteSpreadingLiquid).GetMethod(
+                nameof(PatchBlockBehaviorFiniteSpreadingLiquid.PostfixCanSpreadIntoBlock),
+                BindingFlags.NonPublic | BindingFlags.Static);
 
-            harmony.Patch(original, new HarmonyMethod(prefix), null);
+            if (original == null || postfix == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped patch for BlockBehaviorFiniteSpreadingLiquid.CanSpreadIntoBlock. Method lookup failed for current game version.");
+                return;
+            }
 
-            sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
+            harmony.Patch(original, null, new HarmonyMethod(postfix));
+
+            sapi.Logger.Notification("Applied postfix to Vintage Story's BlockBehaviorFiniteSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
         }
-        */
 
         internal void PatchBlockBehaviorFiniteSpreadingLiquidFindDownwardPaths(ICoreServerAPI sapi, Harmony harmony)
         {

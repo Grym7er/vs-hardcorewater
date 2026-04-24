@@ -11,6 +11,38 @@ namespace AdditionalSpawnConstraints.ModPatches
 {
 	public class PatchBlockBehaviorFiniteSpreadingLiquid
 	{
+        private static bool IsRapidWaterBlockCode(Block block)
+        {
+            return block?.Code?.Path != null && block.Code.Path.StartsWith("rapidwater");
+        }
+
+        /// <summary>Finite fresh water blocks using the vanilla water-* code path (excludes rapidwater-*, saltwater, etc.).</summary>
+        private static bool IsVanillaFiniteFreshWaterCode(Block block)
+        {
+            return block?.Code?.Path != null && block.Code.Path.StartsWith("water-");
+        }
+
+        /// <summary>
+        /// Vanilla allows standard finite water to displace rapids at equal/lower level (waterwheel anti-exploit).
+        /// Prevent normal water from overwriting rapids inside aqueduct channels so rapids can be transported.
+        /// Water wheels and other vanilla behaviors on non-aqueduct cells are unchanged.
+        /// Registered in HardcoreWaterModSystem.PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock.
+        /// </summary>
+        internal static void PostfixCanSpreadIntoBlock(ref bool __result, Block ourblock, Block ourSolid, BlockPos pos, BlockPos npos, BlockFacing facing, IWorldAccessor world)
+        {
+            if (!HardcoreWater.HardcoreWaterConfig.Loaded.EnableAqueductRapids || !__result)
+            {
+                return;
+            }
+
+            Block neighborSolid = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.SolidBlocks);
+            Block neighborLiquid = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
+            if (neighborSolid is IAqueduct && IsRapidWaterBlockCode(neighborLiquid) && IsVanillaFiniteFreshWaterCode(ourblock))
+            {
+                __result = false;
+            }
+        }
+
         private static bool AcceptsFlowFromSide(IAqueduct aqueduct, BlockFacing incomingSide)
         {
             if (string.IsNullOrEmpty(aqueduct.Orientation) || aqueduct.Orientation.Length < 2)
