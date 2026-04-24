@@ -284,13 +284,15 @@ namespace HardcoreWater.ModBlockEntity
 
             bool hasFluidCodePath = ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.Path != null;
             bool notIced = !hasFluidCodePath || !ourBlockFluid.Code.Path.Contains("ice");
-            // Vanilla updateOwnFlowDir keeps rewriting rapid flow variant (still / n / e / w / d). Forcing our axis letter
-            // every tick causes BlockId churn and visible oscillation (logs: cur still/e/d vs stable tgt rapidwater-w-6).
+            // Vanilla updateOwnFlowDir is skipped for these cells (Harmony). Skip redundant SetBlock only when fluid already
+            // matches our resolved target id (still/wrong-letter vs w-6 then get one corrective SetBlock).
             int targetHeight = Math.Min(7, this.WaterLevel);
             bool skipRapidVariantReplace = this.CarriesRapids
                 && ourBlockFluid != null
                 && IsRapidWaterCodePath(ourBlockFluid)
-                && ourBlockFluid.LiquidLevel == targetHeight;
+                && ourBlockFluid.LiquidLevel == targetHeight
+                && liquidBlockToSet != null
+                && ourBlockFluid.BlockId == liquidBlockToSet.BlockId;
             bool shouldReplaceFluid = ourBlockFluid != null && liquidBlockToSet != null && notIced
                 && (ourBlockFluid.LiquidLevel < this.WaterLevel
                     || (!skipRapidVariantReplace && ourBlockFluid.BlockId != liquidBlockToSet.BlockId));

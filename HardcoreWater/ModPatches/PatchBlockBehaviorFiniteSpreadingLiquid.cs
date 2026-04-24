@@ -43,6 +43,38 @@ namespace AdditionalSpawnConstraints.ModPatches
             }
         }
 
+        /// <summary>
+        /// Vanilla <c>updateOwnFlowDir</c> rewrites rapid flow variants (still / n / e / w) from hydraulics, which fights our
+        /// axis-aligned aqueduct fill and causes flicker. Skip that rewrite for rapid fluid in aqueduct channels that carry rapids.
+        /// Does not run for <c>rapidwater-d-*</c> unless path is still rapidwater; horizontal channels are the intended case.
+        /// Registered in HardcoreWaterModSystem.PatchBlockBehaviorFiniteSpreadingLiquidUpdateOwnFlowDir.
+        /// </summary>
+        internal static bool PrefixUpdateOwnFlowDir(BlockBehaviorFiniteSpreadingLiquid __instance, Block block, IWorldAccessor world, BlockPos pos)
+        {
+            if (!HardcoreWater.HardcoreWaterConfig.Loaded.EnableAqueductRapids)
+            {
+                return true;
+            }
+
+            if (!IsRapidWaterBlockCode(block))
+            {
+                return true;
+            }
+
+            Block solid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.SolidBlocks);
+            if (solid is not IAqueduct)
+            {
+                return true;
+            }
+
+            if (world.BlockAccessor.GetBlockEntity(pos) is not BlockEntityAqueduct be || !be.CarriesRapids)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private static bool AcceptsFlowFromSide(IAqueduct aqueduct, BlockFacing incomingSide)
         {
             if (string.IsNullOrEmpty(aqueduct.Orientation) || aqueduct.Orientation.Length < 2)

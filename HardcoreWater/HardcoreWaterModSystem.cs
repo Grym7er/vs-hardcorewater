@@ -99,6 +99,8 @@ namespace HardcoreWater
                 PatchBlockBehaviorFiniteSpreadingLiquidCanSpreadIntoBlock(sapi, harmonyInst);
 
                 PatchBlockBehaviorFiniteSpreadingLiquidFindDownwardPaths(sapi, harmonyInst);
+
+                PatchBlockBehaviorFiniteSpreadingLiquidUpdateOwnFlowDir(sapi, harmonyInst);
             }
 
             sapi.Event.PlayerJoin += this.OnPlayerJoin;
@@ -260,6 +262,29 @@ namespace HardcoreWater
             harmony.Patch(original, null, new HarmonyMethod(postfix));
 
             sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorFiniteSpreadingLiquid.FindDownwardPaths from Hardcore Water!");
+        }
+
+        internal void PatchBlockBehaviorFiniteSpreadingLiquidUpdateOwnFlowDir(ICoreServerAPI sapi, Harmony harmony)
+        {
+            MethodInfo original = typeof(BlockBehaviorFiniteSpreadingLiquid).GetMethod(
+                "updateOwnFlowDir",
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                null,
+                new[] { typeof(Block), typeof(IWorldAccessor), typeof(BlockPos) },
+                null);
+            MethodInfo prefix = typeof(PatchBlockBehaviorFiniteSpreadingLiquid).GetMethod(
+                nameof(PatchBlockBehaviorFiniteSpreadingLiquid.PrefixUpdateOwnFlowDir),
+                BindingFlags.NonPublic | BindingFlags.Static);
+
+            if (original == null || prefix == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped patch for BlockBehaviorFiniteSpreadingLiquid.updateOwnFlowDir. Method lookup failed for current game version.");
+                return;
+            }
+
+            harmony.Patch(original, new HarmonyMethod(prefix), null);
+
+            sapi.Logger.Notification("Applied prefix to Vintage Story's BlockBehaviorFiniteSpreadingLiquid.updateOwnFlowDir from Hardcore Water!");
         }
     }
 }
