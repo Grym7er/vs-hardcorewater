@@ -1,4 +1,8 @@
 ###
+v1.22.x-1.3.8
+- Added support for all stone types
+
+###
 v1.22.x-1.3.7
 - Added rapids - toggleable via config option
 
