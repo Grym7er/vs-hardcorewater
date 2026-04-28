@@ -30,10 +30,20 @@
 		{
 			"code": "rock",
 			"states": [
-				"limestone",
-				"sandstone",
+				"andesite",
 				"basalt",
-				"granite"
+				"bauxite",
+				"chalk",
+				"chert",
+				"claystone",
+				"conglomerate",
+				"granite",
+				"limestone",
+				"peridotite",
+				"phyllite",
+				"sandstone",
+				"shale",
+				"slate"
 			]
 		},
 		{

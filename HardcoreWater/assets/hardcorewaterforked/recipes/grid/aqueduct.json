@@ -9,7 +9,22 @@
       "type": "item",
       "code": "game:stonebrick-*",
       "name": "rock",
-      "allowedVariants": [ "limestone", "granite", "sandstone", "basalt" ]
+      "allowedVariants": [
+        "andesite",
+        "basalt",
+        "bauxite",
+        "chalk",
+        "chert",
+        "claystone",
+        "conglomerate",
+        "granite",
+        "limestone",
+        "peridotite",
+        "phyllite",
+        "sandstone",
+        "shale",
+        "slate"
+      ]
     }
   },
   "width": 3,
