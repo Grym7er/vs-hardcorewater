@@ -89,8 +89,11 @@ namespace HardcoreWater
                 .RegisterMessageType<SyncConfigClientPacket>()
                 .SetMessageHandler<SyncConfigClientPacket>((player, packet) => {});
 
-            TryInitializeArchimedesCompat(sapi);
-            
+            if (ArchimedesCompat?.IsActive != true)
+            {
+                TryInitializeArchimedesCompat(sapi);
+            }
+
             if (!Harmony.HasAnyPatches(Mod.Info.ModID)) {
 				harmonyInst = new Harmony(Mod.Info.ModID);
 
@@ -149,10 +152,17 @@ namespace HardcoreWater
                 return;
             }
 
-            ArchimedesCompat = ArchimedesCompatService.Create(sapi);
-            if (ArchimedesCompat != null)
+            ArchimedesCompatService created = ArchimedesCompatService.Create(sapi);
+            if (created != null)
             {
+                ArchimedesCompat = created;
                 compatRecoveryAttempts = 0;
+                return;
+            }
+
+            if (ArchimedesCompat?.IsActive == true)
+            {
+                return;
             }
         }
 
