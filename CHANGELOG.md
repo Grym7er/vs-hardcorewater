@@ -1,3 +1,11 @@
+###
+v1.22.x-1.3.7
+- Added rapids - toggleable via config option
+
+###
+v1.22.x-1.3.6
+- Updated to 1.22
+
 ### v1.20.x-1.3.5
 
 - Made wooden aqueduct recipe slightly cheaper
