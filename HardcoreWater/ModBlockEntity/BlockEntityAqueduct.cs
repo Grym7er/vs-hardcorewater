@@ -133,9 +133,9 @@ namespace HardcoreWater.ModBlockEntity
         /// </summary>
         private readonly HashSet<(int x, int y, int z, int dim)> rapidSourceWalkVisited = new HashSet<(int x, int y, int z, int dim)>();
 
-        private readonly BlockPos rapidsChainTerminalOutScratch = new BlockPos();
-        private readonly BlockPos rapidsChainProbeCachedWaterSourcePos = new BlockPos();
-        private readonly BlockPos rapidsChainProbeTerminalPos = new BlockPos();
+        private BlockPos rapidsChainTerminalOutScratch;
+        private BlockPos rapidsChainProbeCachedWaterSourcePos;
+        private BlockPos rapidsChainProbeTerminalPos;
         private bool rapidsChainProbeCacheValid;
         private bool rapidsChainProbeCachedCarries;
         private int rapidsChainProbeTerminalFluidBlockId;
@@ -718,6 +718,9 @@ namespace HardcoreWater.ModBlockEntity
 		public override void Initialize(ICoreAPI api)
 		{
 			base.Initialize(api);
+			this.rapidsChainTerminalOutScratch = new BlockPos(Pos.dimension);
+			this.rapidsChainProbeCachedWaterSourcePos = new BlockPos(Pos.dimension);
+			this.rapidsChainProbeTerminalPos = new BlockPos(Pos.dimension);
 			this.blockAqueduct = (base.Block as IAqueduct);
             this.InvalidateRapidsChainProbeCache();
             this.tickIntervalSeconds = GameMath.Clamp(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds, 0.1f, 10f);
