@@ -89,11 +89,6 @@ namespace HardcoreWater
                 .RegisterMessageType<SyncConfigClientPacket>()
                 .SetMessageHandler<SyncConfigClientPacket>((player, packet) => {});
 
-            if (ArchimedesCompat?.IsActive != true)
-            {
-                TryInitializeArchimedesCompat(sapi);
-            }
-
             if (!Harmony.HasAnyPatches(Mod.Info.ModID)) {
 				harmonyInst = new Harmony(Mod.Info.ModID);
 
