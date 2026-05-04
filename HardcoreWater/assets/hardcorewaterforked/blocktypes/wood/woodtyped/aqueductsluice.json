@@ -2,6 +2,7 @@
 	"code": "aqueductsluice",
 	"class": "BlockAqueductSluice",
 	"entityClass": "BlockEntityAqueductSluice",
+	"entityBehaviors": [{ "name": "Animatable" }],
 	"drops": [
 		{
 			"type": "block",
@@ -26,7 +27,23 @@
 				0.0,
 				1.0
 			],
+			"*-none-sn": [
+				0.0,
+				1.0,
+				0.0,
+				1.0,
+				0.0,
+				1.0
+			],
 			"*-none-we": [
+				1.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"*-none-ew": [
 				1.0,
 				0.0,
 				1.0,
@@ -61,7 +78,9 @@
 			"code": "orientation",
 			"states": [
 				"ns",
-				"we"
+				"we",
+				"sn",
+				"ew"
 			]
 		}
 	],
@@ -84,6 +103,14 @@
 		"*-none-we": {
 			"base": "block/wood/aqueduct_sluice_ns",
 			"rotateY": 90
+		},
+		"*-none-sn": {
+			"base": "block/wood/aqueduct_sluice_ns",
+			"rotateY": 180
+		},
+		"*-none-ew": {
+			"base": "block/wood/aqueduct_sluice_ns",
+			"rotateY": 270
 		}
 	},
 	"blockmaterial": "Wood",
@@ -96,17 +123,7 @@
 			"west": true,
 			"east": true
 		},
-		"*-none-we": {
-			"up": false,
-			"down": true,
-			"north": true,
-			"south": true,
-			"west": false,
-			"east": false
-		}
-	},
-	"sideSolidByType": {
-		"*-none-ns": {
+		"*-none-sn": {
 			"up": false,
 			"down": true,
 			"north": false,
@@ -121,6 +138,48 @@
 			"south": true,
 			"west": false,
 			"east": false
+		},
+		"*-none-ew": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		}
+	},
+	"sideSolidByType": {
+		"*-none-ns": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": false,
+			"west": true,
+			"east": true
+		},
+		"*-none-sn": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": true,
+			"west": true,
+			"east": true
+		},
+		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": true,
+			"east": false
+		},
+		"*-none-ew": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": true
 		}
 	},
 	"collisionSelectionBoxesByType": {

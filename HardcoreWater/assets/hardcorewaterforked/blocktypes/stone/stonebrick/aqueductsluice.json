@@ -2,6 +2,7 @@
 	"code": "aqueductsluice",
 	"class": "BlockAqueductSluice",
 	"entityClass": "BlockEntityAqueductSluice",
+	"entityBehaviors": [{ "name": "Animatable" }],
 	"drops": [
 		{
 			"type": "block",

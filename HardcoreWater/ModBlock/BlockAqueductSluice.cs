@@ -11,25 +11,50 @@ namespace HardcoreWater.ModBlock
             return "none";
         }
 
-        // public void Activate(BlockEntityAqueductSluice entity)
-        // {
-        //     if (!HasFuel || Api == null) return;
+        public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
+        {
+            BlockFacing[] horVer = Block.SuggestedHVOrientation(byPlayer, blockSel);
+            string orientation = "";
+            switch (horVer[0].Index)
+            {
+                case 0:
+                    orientation = "sn";
+                    break;
+                case 1:
+                    orientation = "we";
+                    // Console.WriteLine("case: "+ horVer[0].Index + " orientation: " + orientation);
+                    break;
+                case 2:
+                    orientation = "ns";
+                    // Console.WriteLine("case: "+ horVer[0].Index + " orientation: " + orientation);
+                    break;
+                case 3:
+                    orientation = "ew";
+                    // Console.WriteLine("case: "+ horVer[0].Index + " orientation: " + orientation);
+                    break;
+            }
 
-        //     On = true;
-        //     lastUpdateTotalDays = Api.World.Calendar.TotalDays;
-
-        //     animUtil?.StartAnimation(new AnimationMetaData() { Animation = "on-spin", Code = "on-spin", EaseInSpeed = 1, EaseOutSpeed = 2, AnimationSpeed = 1f });
-        //     this.entity.MarkDirty(true);
-        //     ToggleAmbientSound(true);
-        // }
-
-        // public void Deactivate()
-        // {
-        //     animUtil?.StopAnimation("on-spin");
-        //     On = false;
-        //     ToggleAmbientSound(false);
-        //     MarkDirty(true);
-        // }
+            string connections = this.GetConnections(world, blockSel.Position, BlockFacing.FromFirstLetter(orientation));
+            Block block = world.BlockAccessor.GetBlock(base.CodeWithVariants(new string[]
+            {
+                "connections",
+                "orientation"
+            }, new string[]
+            {
+                connections,
+                orientation
+            }));
+            if (block == null)
+            {
+                block = this;
+            }
+            if (block.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
+            {
+                world.BlockAccessor.SetBlock(block.BlockId, blockSel.Position);
+                return true;
+            }
+            return false;
+        }
 
     public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
     {
