@@ -172,10 +172,10 @@
 	],
 	"animations": [
 		{
-			"name": "Animation 1",
-			"code": "animation1",
+			"name": "open",
+			"code": "open",
 			"quantityframes": 30,
-			"onActivityStopped": "PlayTillEnd",
+			"onActivityStopped": "Rewind",
 			"onAnimationEnd": "Hold",
 			"keyframes": [
 				{
@@ -188,6 +188,27 @@
 					"frame": 29,
 					"elements": {
 						"Sluice": { "offsetX": 0.0, "offsetY": 12.0, "offsetZ": 0.0 }
+					}
+				}
+			]
+		},
+		{
+			"name": "close",
+			"code": "close",
+			"quantityframes": 30,
+			"onActivityStopped": "PlayTillEnd",
+			"onAnimationEnd": "Hold",
+			"keyframes": [
+				{
+					"frame": 0,
+					"elements": {
+						"Sluice": { "offsetX": 0.0, "offsetY": 12.0, "offsetZ": 0.0 }
+					}
+				},
+				{
+					"frame": 29,
+					"elements": {
+						"Sluice": { "offsetX": 0.0, "offsetY": 0.0, "offsetZ": 0.0 }
 					}
 				}
 			]

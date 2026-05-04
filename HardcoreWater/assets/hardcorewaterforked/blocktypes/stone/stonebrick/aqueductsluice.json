@@ -18,7 +18,9 @@
 		},
 		"liquidBarrierOnSidesByType": {
 			"*-none-ns": [ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 ],
-			"*-none-we": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0 ]
+			"*-none-sn": [ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 ],
+			"*-none-we": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0 ],
+			"*-none-ew": [ 1.0, 0.0, 1.0, 0.0, 0.0, 1.0 ]
 		}
 	},
 	"variantgroups": [
@@ -55,7 +57,9 @@
 			"code": "orientation",
 			"states": [
 				"ns",
-				"we"
+				"we",
+				"sn",
+				"ew"
 			]
 		}
 	],
@@ -75,9 +79,17 @@
 			"base": "block/stone/stonebrick/aqueduct_sluice_ns",
 			"rotateY": 0
 		},
+		"*-none-sn": {
+			"base": "block/stone/stonebrick/aqueduct_sluice_ns",
+			"rotateY": 180
+		},
 		"*-none-we": {
 			"base": "block/stone/stonebrick/aqueduct_sluice_ns",
 			"rotateY": 90
+		},
+		"*-none-ew": {
+			"base": "block/stone/stonebrick/aqueduct_sluice_ns",
+			"rotateY": 270
 		}
 	},
 	"blockmaterial": "Stone",
@@ -90,7 +102,23 @@
 			"west": true,
 			"east": true
 		},
+		"*-none-sn": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
 		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-none-ew": {
 			"up": false,
 			"down": true,
 			"north": true,
@@ -108,7 +136,23 @@
 			"west": true,
 			"east": true
 		},
+		"*-none-sn": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
 		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		},
+		"*-none-ew": {
 			"up": false,
 			"down": true,
 			"north": true,
@@ -119,6 +163,32 @@
 	},
 	"collisionSelectionBoxesByType": {
 		"*-ns": [
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 0.18,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.82,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.0,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 0.18,
+				"z2": 1.0
+			}
+		],
+		"*-sn": [
 			{
 				"x1": 0.0,
 				"y1": 0.18,
@@ -169,6 +239,32 @@
 				"y2": 0.18,
 				"z2": 1.0
 			}
+		],
+		"*-ew": [
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 0.18
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.82,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.0,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 0.18,
+				"z2": 1.0
+			}
 		]
 	},
 	"replaceable": 200,
@@ -176,7 +272,7 @@
 	"lightAbsorption": 99,
 	"textures": {
 		"base": {
-			"base": "game:block/stone/brick/{rock}*"
+		"base": "game:block/stone/brick/{rock}1"
 		},
 		"sluice": {
 			"base": "game:block/wood/planks/oak4"
