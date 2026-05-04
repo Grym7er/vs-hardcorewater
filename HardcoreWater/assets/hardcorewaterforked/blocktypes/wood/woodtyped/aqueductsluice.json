@@ -1,0 +1,230 @@
+{
+	"code": "aqueductsluice",
+	"class": "BlockAqueductSluice",
+	"entityClass": "BlockEntityAqueductSluice",
+	"drops": [
+		{
+			"type": "block",
+			"code": "aqueductsluice-{wood}-none-ns",
+			"quantity": {
+				"avg": 1
+			}
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"groupBy": [
+				"aqueductsluice-{wood}-none-*"
+			]
+		},
+		"liquidBarrierOnSidesByType": {
+			"*-none-ns": [
+				0.0,
+				1.0,
+				0.0,
+				1.0,
+				0.0,
+				1.0
+			],
+			"*-none-we": [
+				1.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		}
+	},
+	"variantgroups": [
+		{
+			"code": "wood",
+			"states": [
+				"aged",
+				"veryaged"
+			],
+			"loadFromPropertiesCombine": [
+				"game:block/wood"
+			]
+		},
+		{
+			"code": "connections",
+			"states": [
+				"none",
+				"n",
+				"s",
+				"e",
+				"w"
+			]
+		},
+		{
+			"code": "orientation",
+			"states": [
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-none-ns"
+		],
+		"terrain": [
+			"*-none-ns"
+		],
+		"hardcorewaterforked": [
+			"*-none-ns"
+		]
+	},
+	"shapeByType": {
+		"*-none-ns": {
+			"base": "block/wood/aqueduct_sluice_ns",
+			"rotateY": 0
+		},
+		"*-none-we": {
+			"base": "block/wood/aqueduct_sluice_ns",
+			"rotateY": 90
+		}
+	},
+	"blockmaterial": "Wood",
+	"sideOpaqueByType": {
+		"*-none-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
+		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		}
+	},
+	"sideSolidByType": {
+		"*-none-ns": {
+			"up": false,
+			"down": true,
+			"north": false,
+			"south": false,
+			"west": true,
+			"east": true
+		},
+		"*-none-we": {
+			"up": false,
+			"down": true,
+			"north": true,
+			"south": true,
+			"west": false,
+			"east": false
+		}
+	},
+	"collisionSelectionBoxesByType": {
+		"*-ns": [
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 0.18,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.82,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.0,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 0.18,
+				"z2": 1.0
+			}
+		],
+		"*-we": [
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 0.18
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.18,
+				"z1": 0.82,
+				"x2": 1.0,
+				"y2": 1.0,
+				"z2": 1.0
+			},
+			{
+				"x1": 0.0,
+				"y1": 0.0,
+				"z1": 0.0,
+				"x2": 1.0,
+				"y2": 0.18,
+				"z2": 1.0
+			}
+		]
+	},
+	"replaceable": 200,
+	"resistance": 4,
+	"lightAbsorption": 99,
+	"textures": {
+		"base": {
+			"base": "game:block/wood/debarked/{wood}"
+		},
+		"sluice": {
+			"base": "game:block/wood/planks/{wood}4"
+		}
+	},
+	"texturesByType": {
+		"*-aged*": {
+			"sluice": {
+				"base": "game:block/wood/planks/aged/{wood}4"
+			}
+		},
+		"*-veryaged*": {
+			"sluice": {
+				"base": "game:block/wood/planks/aged/{wood}5"
+			}
+		}
+	},
+	"sounds": {
+		"place": "game:block/planks",
+		"walk": "game:walk/wood",
+		"hit": "game:block/planks",
+		"break": "game:block/planks",
+		"byTool": {
+			"Axe": {
+				"hit": "game:block/chop",
+				"break": "game:block/planks"
+			}
+		}
+	},
+	"heldTpIdleAnimation": "holdbothhandslarge",
+	"heldTpUseAnimation": "twohandplaceblock",
+	"tpHandTransform": {
+		"translation": {
+			"x": -1.23,
+			"y": -0.91,
+			"z": -0.8
+		},
+		"rotation": {
+			"x": -2,
+			"y": 25,
+			"z": -78
+		},
+		"scale": 0.4
+	}
+}

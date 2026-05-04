@@ -68,6 +68,9 @@ namespace HardcoreWater
             api.RegisterBlockClass("BlockEnclosedAqueduct", typeof(BlockEnclosedAqueduct));
             api.RegisterBlockEntityClass("BlockEntityAqueduct", typeof(BlockEntityAqueduct));
 
+            api.RegisterBlockClass("BlockAqueductSluice", typeof(BlockAqueductSluice));
+            api.RegisterBlockEntityClass("BlockEntityAqueductSluice", typeof(BlockEntityAqueductSluice));
+
             api.Logger.Notification("Loaded Hardcore Water!");
         }
 

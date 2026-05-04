@@ -63,6 +63,11 @@ namespace HardcoreWater.ModBlockEntity
             
             if (this.Api.World.BlockAccessor.GetBlock(blockPos) is IAqueduct aqueduct)
             {
+                if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueductSluice>(blockPos) is BlockEntityAqueductSluice sluice && !sluice.IsOpen)
+                {
+                    return false;
+                }
+
                 if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct)
                 {
                     // To be a valid source aqueduct for this one, the adjacent aqueduct must be oriented in the same direction OR not enclosed

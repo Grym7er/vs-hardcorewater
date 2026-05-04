@@ -36,7 +36,7 @@ namespace HardcoreWater.ModBlock
             return "";
         }
 
-        public string GetConnections(IWorldAccessor world, BlockPos pos, BlockFacing originalFacing)
+        protected virtual string GetConnections(IWorldAccessor world, BlockPos pos, BlockFacing originalFacing)
         {
 			string connections = "";
 			if (originalFacing == BlockFacing.NORTH || originalFacing == BlockFacing.SOUTH)

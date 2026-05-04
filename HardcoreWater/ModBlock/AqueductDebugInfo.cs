@@ -44,7 +44,16 @@ namespace HardcoreWater.ModBlock
             if (block.GetLiquidBarrierHeightOnSide(BlockFacing.EAST, pos) > 0f) dsc.AppendLine("Barrier to liquid on side: East");
             if (block.GetLiquidBarrierHeightOnSide(BlockFacing.SOUTH, pos) > 0f) dsc.AppendLine("Barrier to liquid on side: South");
             if (block.GetLiquidBarrierHeightOnSide(BlockFacing.WEST, pos) > 0f) dsc.AppendLine("Barrier to liquid on side: West");
-
+            BlockEntityAqueductSluice blockEntityAqueductSluice = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityAqueductSluice;
+            if (blockEntityAqueductSluice == null)
+            {
+                return dsc.ToString();
+            }
+            dsc.AppendLine(Lang.Get("Sluice Open: {0}", new object[]
+            {
+                blockEntityAqueductSluice.IsOpen
+            }));
+            
             return dsc.ToString();
         }
     }
