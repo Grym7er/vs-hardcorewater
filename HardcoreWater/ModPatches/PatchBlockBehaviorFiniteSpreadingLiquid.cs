@@ -6,6 +6,7 @@ using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
+using System;
 
 namespace AdditionalSpawnConstraints.ModPatches
 {
@@ -75,16 +76,27 @@ namespace AdditionalSpawnConstraints.ModPatches
             return false;
         }
 
-        private static bool AcceptsFlowFromSide(IAqueduct aqueduct, BlockFacing incomingSide)
+        private static bool AcceptsFlowFromSideAqueduct(IAqueduct aqueduct, BlockFacing incomingSide)
         {
             if (string.IsNullOrEmpty(aqueduct.Orientation) || aqueduct.Orientation.Length < 2)
             {
                 return false;
             }
-
+            
             BlockFacing orientationA = BlockFacing.FromFirstLetter(aqueduct.Orientation[0]);
             BlockFacing orientationB = BlockFacing.FromFirstLetter(aqueduct.Orientation[1]);
             return orientationA == incomingSide || orientationB == incomingSide;
+        }
+
+        private static bool AcceptsFlowFromSideSluice(IAqueduct aqueduct, BlockFacing incomingSide)
+        {
+            if (string.IsNullOrEmpty(aqueduct.Orientation) || aqueduct.Orientation.Length < 2)
+            {
+                return false;
+            }
+            
+            BlockFacing openEnd = BlockFacing.FromFirstLetter(aqueduct.Orientation[1]); // idx 1 is the open end
+            return openEnd == incomingSide;
         }
 
         private static bool IsValidAqueductPathCandidate(IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
@@ -99,8 +111,11 @@ namespace AdditionalSpawnConstraints.ModPatches
             if (sourceSolid == null || candidateSolid == null || candidateFluid == null) return false;
             if (!(candidateSolid is IAqueduct candidateAqueduct)) return false;
 
+            if ( candidateSolid is BlockAqueductSluice && !AcceptsFlowFromSideSluice(candidateAqueduct, facing.Opposite)) return false;
+            else if ( candidateSolid is BlockAqueduct && !AcceptsFlowFromSideAqueduct(candidateAqueduct, facing.Opposite)) return false;
+             
             // Flow enters candidate from the opposite side of source->candidate facing.
-            if (!AcceptsFlowFromSide(candidateAqueduct, facing.Opposite)) return false;
+
 
             // Respect standard spread constraints so appended paths don't bypass survival invariants.
             float sourceBarrier = sourceSolid.GetLiquidBarrierHeightOnSide(facing, sourcePos);
@@ -242,7 +257,7 @@ namespace AdditionalSpawnConstraints.ModPatches
                 }
 
                 // Scan blocks front and back of the aqueduct
-                if (BlockFacing.FromFirstLetter(blockAqueduct.Orientation) == BlockFacing.NORTH)
+                if (BlockFacing.FromFirstLetter(blockAqueduct.Orientation) == BlockFacing.NORTH || BlockFacing.FromFirstLetter(blockAqueduct.Orientation) == BlockFacing.SOUTH)
                 {
                     TryAddCandidatePath(__result, world, pos, pos.NorthCopy(), ourBlock);
                     TryAddCandidatePath(__result, world, pos, pos.SouthCopy(), ourBlock);

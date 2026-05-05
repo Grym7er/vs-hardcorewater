@@ -18,18 +18,18 @@ namespace HardcoreWater.ModBlock
             switch (horVer[0].Index)
             {
                 case 0:
-                    orientation = "sn";
+                    orientation = "ns";
                     break;
                 case 1:
-                    orientation = "we";
+                    orientation = "ew";
                     // Console.WriteLine("case: "+ horVer[0].Index + " orientation: " + orientation);
                     break;
                 case 2:
-                    orientation = "ns";
+                    orientation = "sn";
                     // Console.WriteLine("case: "+ horVer[0].Index + " orientation: " + orientation);
                     break;
                 case 3:
-                    orientation = "ew";
+                    orientation = "we";
                     // Console.WriteLine("case: "+ horVer[0].Index + " orientation: " + orientation);
                     break;
             }
@@ -59,7 +59,6 @@ namespace HardcoreWater.ModBlock
     public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
     {
         world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
-        return;
     }
 
     public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
@@ -70,6 +69,75 @@ namespace HardcoreWater.ModBlock
             return true;
         }
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
+    }
+
+    private BlockFacing[] GetSolidFacesDefault(string orientation)
+    {
+        if (orientation == "ns" || orientation == "sn")
+        {
+            return [BlockFacing.WEST, BlockFacing.EAST, BlockFacing.DOWN];
+        }
+        else if (orientation == "we" || orientation == "ew")
+        {
+            return [BlockFacing.NORTH, BlockFacing.SOUTH, BlockFacing.DOWN];
+        }
+        return BlockFacing.ALLFACES;
+    }
+
+    private BlockFacing[] GetSluiceFace(string orientation)
+    {
+        if (orientation == "ns") return [BlockFacing.NORTH];
+        else if (orientation == "sn") return [BlockFacing.SOUTH];
+        else if (orientation == "we") return [BlockFacing.WEST];
+        else if (orientation == "ew") return [BlockFacing.EAST];
+        return BlockFacing.ALLFACES;
+    }
+
+    public override float GetLiquidBarrierHeightOnSide(BlockFacing face, BlockPos pos)
+    {
+
+
+        string myOrientation = this.Orientation;
+        BlockEntityAqueductSluice be = GetBlockEntity<BlockEntityAqueductSluice>(pos);
+        if (be != null)
+        {
+            if (be.IsOpen)
+            {
+                // IsOpen, so only side faces are solid
+                BlockFacing[] solidFaces = GetSolidFacesDefault(myOrientation);
+                foreach (BlockFacing solidFace in solidFaces)
+                {
+                    if (solidFace == face)
+                    {
+                        return 1f;
+                    }
+                }
+            }
+            else
+            {
+                BlockFacing[] solidFaces = GetSolidFacesDefault(myOrientation);
+                BlockFacing[] blockedFaces = GetSluiceFace(myOrientation);
+                foreach (BlockFacing solidFace in solidFaces)
+                {
+                    if (solidFace == face)
+                    {
+                        return 1f;
+                    }
+                }
+                foreach (BlockFacing blockedFace in blockedFaces)
+                {
+                    if (blockedFace == face)
+                    {
+                        return 1f;
+                    }
+                }
+            }
+            return 0f;
+        }
+        else{
+            return 1f;
+        }
+         
     }
 	}
 }

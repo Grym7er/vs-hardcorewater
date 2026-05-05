@@ -58,19 +58,85 @@ namespace HardcoreWater.ModBlockEntity
             return false;
         }
 
+        private List<string> GetValidAqueductOrientations()
+        {
+            string my_orientation = this.blockAqueduct.Orientation;
+            if (my_orientation == "ns" || my_orientation == "sn")
+            {
+                return new List<string> { "ns", "sn" };
+            }
+            else if (my_orientation == "we" || my_orientation == "ew")
+            {
+                return new List<string> { "we", "ew" };
+            }
+            // This should never happen
+            return new List<string> { "ns", "sn", "we", "ew" };
+        }
+
+        // Working
+        // -----------------------------
+        // notSourcingThis: True
+        // this.WaterSourcePos: 511990, 3, 511994
+        // sluice.WaterSourcePos: 511990, 3, 511995
+        // this.Pos: 511990, 3, 511993
+        // sluice.Pos: 511990, 3, 511994
+        // hasMinWater: True
+        // isValid: True
+        // -----------------------------
+
+        // Nonworking
+        // -----------------------------
+        // notSourcingThis: False
+        // this.WaterSourcePos: 
+        // sluice.WaterSourcePos: 
+        // this.Pos: 511990, 3, 511993
+        // sluice.Pos: 511990, 3, 511994
+        // hasMinWater: False
+        // isValid: False
+        // -----------------------------
+
         private bool IsValidFilledAqueduct(BlockPos blockPos)
         {
             
             if (this.Api.World.BlockAccessor.GetBlock(blockPos) is IAqueduct aqueduct)
             {
-                if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueductSluice>(blockPos) is BlockEntityAqueductSluice sluice && !sluice.IsOpen)
+                if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueductSluice>(blockPos) is BlockEntityAqueductSluice sluice)
                 {
-                    return false;
+                    if (!sluice.IsOpen) return false;
+
+                    string sluice_orientation = sluice.blockAqueduct.Orientation;
+                    string my_orientation = this.blockAqueduct.Orientation;
+
+                    bool myOrientationIsCorrect = false;
+
+                    if (((sluice_orientation == "ns" || sluice_orientation == "sn") && my_orientation == "ns") || ((sluice_orientation == "we" || sluice_orientation == "ew") && my_orientation == "we"))
+                    {
+                        myOrientationIsCorrect = true;
+                    }
+
+                    // DEBUG
+                    Block debug = this.Api.World.BlockAccessor.GetBlock(blockPos);
+                    
+                    Console.WriteLine("------------------");
+                    Console.WriteLine("myOrientation: "+ my_orientation);
+                    Console.WriteLine("sluice_orientation: "+ sluice_orientation);
+                    Console.WriteLine("myOrientationIsCorrect: "+ myOrientationIsCorrect);
+                    Console.WriteLine("Block" + debug.Code.ToShortString() +" is" + myOrientationIsCorrect+ "filled aqueduct for " + this.Block.Code.ToShortString());
+                    Console.WriteLine("------------------");
+                    // List<string> validOrientations = GetValidAqueductOrientations();
+
+                    bool correctOrientation = myOrientationIsCorrect;
+                    bool notSourcingThis = sluice.WaterSourcePos != this.WaterSourcePos;
+                    bool notSourcingEachOther = (this.WaterSourcePos == null || sluice.WaterSourcePos == null) || !(sluice.WaterSourcePos == this.Pos && this.WaterSourcePos == sluice.Pos);
+                    bool hasMinWater = sluice.HasWaterSource;
+                    bool isValid = correctOrientation && notSourcingThis && notSourcingEachOther && hasMinWater;
+                    return isValid;
                 }
 
-                if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct)
+                else if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueduct>(blockPos) is BlockEntityAqueduct adjacentAqueduct )
                 {
                     // To be a valid source aqueduct for this one, the adjacent aqueduct must be oriented in the same direction OR not enclosed
+                
                     bool correctOrientation = aqueduct.Orientation == this.blockAqueduct.Orientation || !aqueduct.IsEnclosed;
                     bool notSourcingThis = adjacentAqueduct.WaterSourcePos != this.WaterSourcePos;
                     bool notSourcingEachOther = (this.WaterSourcePos == null || adjacentAqueduct.WaterSourcePos == null) || !(adjacentAqueduct.WaterSourcePos == this.Pos && this.WaterSourcePos == adjacentAqueduct.Pos);
@@ -513,11 +579,21 @@ namespace HardcoreWater.ModBlockEntity
 				blockPosFB[0] = this.Pos.NorthCopy();
 				blockPosFB[1] = this.Pos.SouthCopy();
 			}
-            else
+            else if (BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation) == BlockFacing.SOUTH)
+            {
+                blockPosFB[0] = this.Pos.SouthCopy();
+				blockPosFB[1] = this.Pos.NorthCopy();
+            }
+            else if (BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation) == BlockFacing.WEST)
             {
 				blockPosFB[0] = this.Pos.WestCopy();
 				blockPosFB[1] = this.Pos.EastCopy();
 			}
+            else
+            {
+                blockPosFB[0] = this.Pos.EastCopy();
+				blockPosFB[1] = this.Pos.WestCopy();
+            }
 
 			// Check validity of previous source location, if present
 			//if (this.WaterSourcePos != null)
@@ -668,6 +744,35 @@ namespace HardcoreWater.ModBlockEntity
                         }
                         else if (IsValidFilledAqueduct(endPos))
                         {
+                            // Block endPosBlock = this.Api.World.BlockAccessor.GetBlock(endPos);
+
+                            // if (endPosBlock is BlockAqueductSluice sluice)
+                            // {
+                            //     // if the endPosBlock is a sluice, we also need to run another check to see if the sluice
+                            //     // is aligned with the current aqueduct.
+                            //     // if it is not, then we should not consider it a valid source
+                            //     string sluice_orientation = sluice.Orientation; // ns, sn, we, ew
+                            //     string my_orientation = this.blockAqueduct.Orientation; // ns, we
+
+                            //     if (((sluice_orientation == "ns" || sluice_orientation == "sn") && my_orientation == "ns") || ((sluice_orientation == "we" || sluice_orientation == "ew") && my_orientation == "we"))
+                            //     {
+                            //         this.WaterSourcePos = endPos;
+                            //         this.WaterLevel = 6;
+                            //         hasSource = true;
+                            //         this.HasWaterSource = true;
+                            //         break; // Connected to aqueduct that isn't using this one as a source and has valid water source adjacent
+                            //     }
+                            //     else{
+                            //         this.WaterSourcePos = null;
+                            //         this.WaterLevel = 0;
+                            //         hasSource = false;
+                            //         this.HasWaterSource = false;
+                            //         break;
+                            //     }
+                            // }
+
+                            
+                            // DEBUG
                             this.WaterSourcePos = endPos;
                             this.WaterLevel = 6;
                             hasSource = true;

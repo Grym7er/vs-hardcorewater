@@ -64,6 +64,7 @@ namespace HardcoreWater.ModBlockEntity
             // Console.WriteLine("CloseSluice");
             MarkDirty(true);
             
+            
         }
 
         public bool OnInteract(BlockSelection blockSel, IPlayer byPlayer)
@@ -93,11 +94,15 @@ namespace HardcoreWater.ModBlockEntity
                 animUtil?.StartAnimation(new AnimationMetaData()
                 {
                     Animation = "open",
-                    Code = "open"
+                    Code = "open",
+                    EaseInSpeed = 3f,
+                    EaseOutSpeed = 3f,
+                    AnimationSpeed = 1f
                 });
             }
             else
             {
+                // TODO - let the rewind take place a bit slower
                 animUtil?.StopAnimation("open"); // With rewind, stopping animation will rewind to the first, looking like closing
             }
         }

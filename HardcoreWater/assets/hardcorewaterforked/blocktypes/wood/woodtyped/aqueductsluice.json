@@ -17,40 +17,6 @@
 			"groupBy": [
 				"aqueductsluice-{wood}-none-*"
 			]
-		},
-		"liquidBarrierOnSidesByType": {
-			"*-none-ns": [
-				0.0,
-				1.0,
-				0.0,
-				1.0,
-				0.0,
-				1.0
-			],
-			"*-none-sn": [
-				0.0,
-				1.0,
-				0.0,
-				1.0,
-				0.0,
-				1.0
-			],
-			"*-none-we": [
-				1.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				1.0
-			],
-			"*-none-ew": [
-				1.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				1.0
-			]
 		}
 	},
 	"variantgroups": [
