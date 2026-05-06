@@ -70,14 +70,18 @@ namespace HardcoreWater.ModBlockEntity
         public bool OnInteract(BlockSelection blockSel, IPlayer byPlayer)
         {
             if (!isOpen)
-            {   
+
+            {   Api.World.PlaySoundAt(new AssetLocation("hardcorewaterforked:sounds/effect/sluiceopen.ogg"), Pos, 0, byPlayer);
                 OpenSluice();
+                
                 // animUtil?.StartAnimation(new AnimationMetaData() { Animation = "open", Code = "open", EaseInSpeed = 1f, EaseOutSpeed = 100f, AnimationSpeed = 1f });
             
             }
             else if (isOpen)
             {
+                Api.World.PlaySoundAt(new AssetLocation("hardcorewaterforked:sounds/effect/sluiceclose.ogg"), Pos, 0, byPlayer);
                 CloseSluice();
+               
                 // animUtil?.StartAnimation(new AnimationMetaData() { Animation = "close", Code = "close", EaseInSpeed = 1f, EaseOutSpeed = 100f, AnimationSpeed = 1f });
             }
 
@@ -99,6 +103,7 @@ namespace HardcoreWater.ModBlockEntity
                     EaseOutSpeed = 3f,
                     AnimationSpeed = 1f
                 });
+                
             }
             else
             {

@@ -2,6 +2,7 @@ using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using HardcoreWater.ModBlockEntity;
+using System.Linq;
 namespace HardcoreWater.ModBlock
 {
 	public class BlockAqueductSluice : BlockAqueduct
@@ -117,6 +118,11 @@ namespace HardcoreWater.ModBlock
             {
                 BlockFacing[] solidFaces = GetSolidFacesDefault(myOrientation);
                 BlockFacing[] blockedFaces = GetSluiceFace(myOrientation);
+                // Console.WriteLine("===========");
+                // Console.WriteLine("For queried face: " + face +" at pos: " + pos);
+                // Console.WriteLine("solidFaces: " + string.Join(", ", solidFaces.Select(f => f.ToString())));
+                // Console.WriteLine("blockedFaces: " + string.Join(", ", blockedFaces.Select(f => f.ToString())));
+                // Console.WriteLine("===========");
                 foreach (BlockFacing solidFace in solidFaces)
                 {
                     if (solidFace == face)

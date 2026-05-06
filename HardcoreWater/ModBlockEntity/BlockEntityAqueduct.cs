@@ -109,20 +109,18 @@ namespace HardcoreWater.ModBlockEntity
 
                     bool myOrientationIsCorrect = false;
 
-                    if (((sluice_orientation == "ns" || sluice_orientation == "sn") && my_orientation == "ns") || ((sluice_orientation == "we" || sluice_orientation == "ew") && my_orientation == "we"))
+                    if (((sluice_orientation == "ns" || sluice_orientation == "sn") && (my_orientation == "ns" || my_orientation == "sn")) || ((sluice_orientation == "we" || sluice_orientation == "ew") && (my_orientation == "we" || my_orientation == "ew")))
                     {
                         myOrientationIsCorrect = true;
                     }
 
-                    // DEBUG
-                    Block debug = this.Api.World.BlockAccessor.GetBlock(blockPos);
                     
-                    Console.WriteLine("------------------");
-                    Console.WriteLine("myOrientation: "+ my_orientation);
-                    Console.WriteLine("sluice_orientation: "+ sluice_orientation);
-                    Console.WriteLine("myOrientationIsCorrect: "+ myOrientationIsCorrect);
-                    Console.WriteLine("Block" + debug.Code.ToShortString() +" is" + myOrientationIsCorrect+ "filled aqueduct for " + this.Block.Code.ToShortString());
-                    Console.WriteLine("------------------");
+                    // Console.WriteLine("------------------");
+                    // Console.WriteLine("myOrientation: "+ my_orientation);
+                    // Console.WriteLine("sluice_orientation: "+ sluice_orientation);
+                    // Console.WriteLine("myOrientationIsCorrect: "+ myOrientationIsCorrect);
+                    // Console.WriteLine("Block" + debug.Code.ToShortString() +" is" + myOrientationIsCorrect+ "filled aqueduct for " + this.Block.Code.ToShortString());
+                    // Console.WriteLine("------------------");
                     // List<string> validOrientations = GetValidAqueductOrientations();
 
                     bool correctOrientation = myOrientationIsCorrect;
