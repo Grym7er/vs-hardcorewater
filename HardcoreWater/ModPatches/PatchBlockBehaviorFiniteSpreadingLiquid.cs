@@ -128,7 +128,7 @@ namespace AdditionalSpawnConstraints.ModPatches
             
             if (sourceAqueductBE != null && candidatePos == sourceAqueductBE.WaterSourcePos)
             {
-                Console.WriteLine("Return false because I don't want to spread from " + sourceSolid.Code.ToShortString() + " to " + candidateSolid.Code.ToShortString());
+                // Console.WriteLine("Return false because I don't want to spread from " + sourceSolid.Code.ToShortString() + " to " + candidateSolid.Code.ToShortString());
                 return false; // the logic is that I don't want to spread backwards
             }
 
@@ -151,13 +151,9 @@ namespace AdditionalSpawnConstraints.ModPatches
             float candidateBarrier = candidateSolid.GetLiquidBarrierHeightOnSide(facing.Opposite, candidatePos);
             
             bool barrierCheck = sourceBarrier >= ((float)ourBlock.LiquidLevel / 7f) || candidateBarrier >= ((float)ourBlock.LiquidLevel / 7f);
-            Console.WriteLine("========================");
-            Console.WriteLine("sourceBarrier: " + sourceBarrier);
-            Console.WriteLine("candidateBarrier: " + candidateBarrier);
-            Console.WriteLine("barrierCheck result: " + barrierCheck);
-            Console.WriteLine("========================");
+
             
-            if (barrierCheck) return true;
+            if (barrierCheck) return false;
 
             if (candidateFluid.BlockId != 0 && candidateFluid.Replaceable < ourBlock.Replaceable) return false;
 
@@ -167,17 +163,7 @@ namespace AdditionalSpawnConstraints.ModPatches
         private static void TryAddCandidatePath(List<PosAndDist> paths, IWorldAccessor world, BlockPos sourcePos, BlockPos candidatePos, Block ourBlock)
         {
             if (!IsValidAqueductPathCandidate(world, sourcePos, candidatePos, ourBlock)) return;
-            if (paths.Exists(pad => pad.pos.Equals(candidatePos))) return;
-
-            Block candidateSolid = world.BlockAccessor.GetBlock(candidatePos, BlockLayersAccess.Solid);
-            Block sourceSolid = world.BlockAccessor.GetBlock(sourcePos, BlockLayersAccess.Solid);
-            Console.WriteLine("========================");
-            Console.WriteLine("Accepted candidate to spread into is: " + candidateSolid.Code.ToShortString() + " at position: " + candidatePos);
-            Console.WriteLine("The source solid is: " + sourceSolid.Code.ToShortString() + " at position: " + sourcePos);
-            Console.WriteLine("========================");
-
-        
-
+            if (paths.Exists(pad => pad.pos.Equals(candidatePos))) return;   
             
             paths.Add(new PosAndDist()
             {
@@ -207,7 +193,7 @@ namespace AdditionalSpawnConstraints.ModPatches
             BlockEntityAqueduct sourceAqueduct = world.BlockAccessor.GetBlockEntity(sourcePos) as BlockEntityAqueduct;
             if (sourceAqueduct != null && sourceAqueduct.WaterSourcePos == candidatePos )
             {
-                Console.WriteLine("Return false because I don't want to spread from " + sourceSolid.Code.ToShortString() + " to " + candidateSolid.Code.ToShortString());
+                // Console.WriteLine("Return false because I don't want to spread from " + sourceSolid.Code.ToShortString() + " to " + candidateSolid.Code.ToShortString());
                 return false;
             }
 
@@ -220,12 +206,12 @@ namespace AdditionalSpawnConstraints.ModPatches
             // Prefer empty cells; otherwise respect replaceable rules.
             bool emptyFluidCell = candidateFluid.BlockId == 0;
             bool fluidReplaceable = candidateFluid.Replaceable >= ourBlock.Replaceable;
-            Console.WriteLine("-------------");
-            Console.WriteLine("sourceSolid: " + sourceSolid.Code.ToShortString());
-            Console.WriteLine("candidateSolid: " + candidateSolid.Code.ToShortString());
-            Console.WriteLine("emptyFluidCell: " + emptyFluidCell);
-            Console.WriteLine("fluidReplaceable: " + fluidReplaceable);
-            Console.WriteLine("-------------");
+            // Console.WriteLine("-------------");
+            // Console.WriteLine("sourceSolid: " + sourceSolid.Code.ToShortString());
+            // Console.WriteLine("candidateSolid: " + candidateSolid.Code.ToShortString());
+            // Console.WriteLine("emptyFluidCell: " + emptyFluidCell);
+            // Console.WriteLine("fluidReplaceable: " + fluidReplaceable);
+            // Console.WriteLine("-------------");
             if (!emptyFluidCell && !fluidReplaceable) return false;
 
             return true;

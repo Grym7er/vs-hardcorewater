@@ -1,0 +1,56 @@
+{
+  "ingredientPattern": "RBR,BBB,_A_",
+  "ingredients": {
+    "B": {
+      "type": "item",
+      "code": "game:plank-*",
+      "name": "wood",
+      "allowedVariants": [
+        "acacia",
+        "aged",
+        "baldcypress",
+        "birch",
+        "ebony",
+        "kapok",
+        "larch",
+        "maple",
+        "oak",
+        "pine",
+        "purpleheart",
+        "redwood",
+        "walnut"
+      ]
+    },
+    "A": {
+      "type": "block",
+      "code": "hardcorewaterforked:aqueduct-*-none-ns",
+      "name": "wood",
+      "allowedVariants": [
+        "acacia",
+        "aged",
+        "baldcypress",
+        "birch",
+        "ebony",
+        "kapok",
+        "larch",
+        "maple",
+        "oak",
+        "pine",
+        "purpleheart",
+        "redwood",
+        "walnut"
+      ]
+    },
+    "R": {
+      "type": "item",
+      "code": "game:resin"
+    }
+  },
+  "width": 3,
+  "height": 3,
+  "output": {
+    "type": "block",
+    "code": "hardcorewaterforked:aqueductsluice-{wood}-none-ns",
+    "quantity": 1
+  }
+}

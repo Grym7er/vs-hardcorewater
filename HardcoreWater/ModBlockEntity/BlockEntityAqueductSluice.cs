@@ -1,6 +1,7 @@
 using HardcoreWater;
 using HardcoreWater.ModBlock;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -32,6 +33,23 @@ namespace HardcoreWater.ModBlockEntity
 
         }
 
+        // ToDo: Create a method that replace's the fluid in the sluice block with air, if:
+        // The sluice goes from open to closed.
+        // To water source is on the closed end.
+
+        private void ConditionallyReplaceFluidWithAir()
+        {
+            BlockFacing closedFace = BlockFacing.FromFirstLetter((this.Block as IAqueduct).Orientation[0]);
+            // Get the direction that the water is coming from
+            BlockFacing watercomefromfacing = BlockFacing.HORIZONTALS.FirstOrDefault(f => this.Pos.AddCopy(f).Equals(this.WaterSourcePos));
+            bool shouldReplaceFluid = watercomefromfacing == closedFace;
+            if (shouldReplaceFluid)
+            {
+                this.Api.World.BlockAccessor.SetBlock(0, this.Pos, BlockLayersAccess.Fluid);
+                this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
+            }
+        }
+
         private void OpenSluice()
         {
             
@@ -54,6 +72,7 @@ namespace HardcoreWater.ModBlockEntity
             
             // animUtil?.StartAnimation(new AnimationMetaData() { Animation = "close", Code = "close"});
             isOpen=false;
+            // ConditionallyReplaceFluidWithAir();
             // animUtil.StartAnimation(new AnimationMetaData()
             // {
             //     Animation = "close",
@@ -112,18 +131,43 @@ namespace HardcoreWater.ModBlockEntity
             }
         }
 
+
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
 		{
 			base.FromTreeAttributes(tree, worldAccessForResolve);
             isOpen = tree.GetBool("isOpen", false);
 
 
+            if (worldAccessForResolve.Side == EnumAppSide.Client && Api != null)
+            {
+                // Forces a tesselation 
+                Api.World.BlockAccessor.MarkBlockDirty(Pos);
+                // MarkDirty(true);
+            }
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
             tree.SetBool("isOpen", isOpen);
+        }
+
+        private void UpdateSluiceAnimationState()
+        {
+            bool isOpenAnimationActive = animUtil.activeAnimationsByAnimCode.ContainsKey("open") || animUtil.animator.GetAnimationState("open")?.Active == true;
+            // if currentAnimation is not null, and isOpen is true, set the animation to open
+            if (isOpen && !isOpenAnimationActive)
+            {
+                // play the open animation super fast
+                animUtil?.StartAnimation(new AnimationMetaData()
+                {
+                    Animation = "open",
+                    Code = "open",
+                    EaseInSpeed = 3f,
+                    EaseOutSpeed = 3f,
+                    AnimationSpeed = 1f
+                });
+            }
         }
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
@@ -133,6 +177,13 @@ namespace HardcoreWater.ModBlockEntity
                 float rotY = Block.Shape.rotateY;
                 animUtil?.InitializeAnimator("aqueductsluice", null, null, new Vec3f(0, rotY, 0));
             }
+
+            if (Api.Side == EnumAppSide.Client && animUtil?.animator != null)
+            {
+                // Set the sluice animation to open once the animUtil is initialized
+                UpdateSluiceAnimationState();
+            }
+
             return base.OnTesselation(mesher, tessThreadTesselator);
         }
     }
