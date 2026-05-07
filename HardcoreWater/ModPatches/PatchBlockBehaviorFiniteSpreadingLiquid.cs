@@ -139,7 +139,6 @@ namespace AdditionalSpawnConstraints.ModPatches
             
             if (sourceAqueductBE != null && candidatePos == sourceAqueductBE.WaterSourcePos)
             {
-                // Console.WriteLine("Return false because I don't want to spread from " + sourceSolid.Code.ToShortString() + " to " + candidateSolid.Code.ToShortString());
                 return false; // the logic is that I don't want to spread backwards
             }
 

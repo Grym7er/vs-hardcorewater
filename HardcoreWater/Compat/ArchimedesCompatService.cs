@@ -390,7 +390,7 @@ namespace HardcoreWater.Compat
         private Block ResolveVanillaWaterBlock(string familyId, int level, char flowLetter)
         {
             AssetLocation code = new AssetLocation("game", $"{familyId}-{flowLetter}-{Math.Clamp(level, 1, 7)}");
-            Console.WriteLine("Resolving vanilla water block: " + code.ToShortString() + " with flow letter: " + flowLetter);
+            // Console.WriteLine("Resolving vanilla water block: " + code.ToShortString() + " with flow letter: " + flowLetter);
             return api.World.GetBlock(code);
         }
 

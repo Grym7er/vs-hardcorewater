@@ -53,15 +53,7 @@ namespace HardcoreWater.ModBlockEntity
         private void OpenSluice()
         {
             
-            // animUtil?.StartAnimation(new AnimationMetaData() { Animation = "open", Code = "open"});
             isOpen=true;
-            // animUtil.StartAnimation(new AnimationMetaData()
-            // {
-            //     Animation = "open",
-            //     Code = "open"
-            // });
-            // animUtil.StopAnimation("close");
-            // Console.WriteLine("OpenSluice");
             TriggerSluiceAnimation();
             this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos); // Hopefully fixes the 'not flowing into air' issue
             MarkDirty(true);

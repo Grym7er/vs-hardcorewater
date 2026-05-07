@@ -516,9 +516,9 @@ namespace HardcoreWater.ModBlockEntity
             if (shouldReplaceFluid)
             {
 
-                Console.WriteLine("Setting block: " + liquidBlockToSet.Code.ToShortString() + " at pos: " + this.Pos + " in block type: " + this.Block.Code.ToShortString());
-                Console.WriteLine("Ourblock code: " + ourBlockFluid.Code.ToShortString());
-                Console.WriteLine("\n");
+                // Console.WriteLine("Setting block: " + liquidBlockToSet.Code.ToShortString() + " at pos: " + this.Pos + " in block type: " + this.Block.Code.ToShortString());
+                // Console.WriteLine("Ourblock code: " + ourBlockFluid.Code.ToShortString());
+                // Console.WriteLine("\n");
                 this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
                 if (!string.IsNullOrEmpty(ownerControllerId) &&
                     !string.IsNullOrEmpty(managedFamilyId) &&
