@@ -52,28 +52,39 @@ namespace AdditionalSpawnConstraints.ModPatches
         /// </summary>
         internal static bool PrefixUpdateOwnFlowDir(BlockBehaviorFiniteSpreadingLiquid __instance, Block block, IWorldAccessor world, BlockPos pos)
         {
-            if (!HardcoreWater.HardcoreWaterConfig.Loaded.EnableAqueductRapids)
-            {
-                return true;
-            }
-
-            if (!IsRapidWaterBlockCode(block))
-            {
-                return true;
-            }
-
             Block solid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.SolidBlocks);
-            if (solid is not IAqueduct)
+            if (solid is IAqueduct)
             {
+                // We don't want vanilla to handle flow dir stuff in aqueducts
+                return false;
+            }
+            else{
                 return true;
             }
 
-            if (world.BlockAccessor.GetBlockEntity(pos) is not BlockEntityAqueduct be || !be.CarriesRapids)
-            {
-                return true;
-            }
 
-            return false;
+            // if (!HardcoreWater.HardcoreWaterConfig.Loaded.EnableAqueductRapids)
+            // {
+            //     return true;
+            // }
+
+            // if (!IsRapidWaterBlockCode(block))
+            // {
+            //     return true;
+            // }
+
+            // // Block solid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.SolidBlocks);
+            // if (solid is not IAqueduct)
+            // {
+            //     return true;
+            // }
+
+            // if (world.BlockAccessor.GetBlockEntity(pos) is not BlockEntityAqueduct be || !be.CarriesRapids)
+            // {
+            //     return true;
+            // }
+
+            // return false;
         }
 
         private static bool AcceptsFlowFromSideAqueduct(IAqueduct aqueduct, BlockFacing incomingSide)

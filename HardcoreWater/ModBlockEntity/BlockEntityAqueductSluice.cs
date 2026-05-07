@@ -63,6 +63,7 @@ namespace HardcoreWater.ModBlockEntity
             // animUtil.StopAnimation("close");
             // Console.WriteLine("OpenSluice");
             TriggerSluiceAnimation();
+            this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos); // Hopefully fixes the 'not flowing into air' issue
             MarkDirty(true);
             
         }
@@ -80,7 +81,7 @@ namespace HardcoreWater.ModBlockEntity
             // });
             // animUtil.StopAnimation("open");
             TriggerSluiceAnimation();
-            // Console.WriteLine("CloseSluice");
+            this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos); // Hopefully fixes the 'not flowing into air' issue
             MarkDirty(true);
             
             

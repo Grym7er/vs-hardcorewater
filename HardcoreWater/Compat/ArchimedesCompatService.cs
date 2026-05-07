@@ -122,12 +122,14 @@ namespace HardcoreWater.Compat
                 return false;
             }
 
+            char sourceFlowLetter = aqueduct.ResolveFlowLetter(aqueduct.WaterSourcePos);
+
             if (TryResolveManagedFamily(sourceFluid, out string sourceManagedFamily))
             {
                 bool ownerResolved = TryTraceOwnerControllerId(aqueduct, out string tracedOwnerId, out string tracedFamilyId);
                 if (ownerResolved)
                 {
-                    fillBlock = ResolveManagedStillBlock(tracedFamilyId, waterLevel);
+                    fillBlock = ResolveManagedWaterBlock(tracedFamilyId, waterLevel, sourceFlowLetter);
                     ownerControllerId = tracedOwnerId;
                     managedFamilyId = tracedFamilyId;
                     managedRefillOverrides++;
@@ -146,16 +148,16 @@ namespace HardcoreWater.Compat
 
                 // Preserve managed family even when owner tracing is transiently unavailable.
                 // We intentionally skip ownership assignment in this path (ownerControllerId remains null).
-                fillBlock = ResolveManagedStillBlock(sourceManagedFamily, waterLevel)
-                    ?? ResolveVanillaStillBlock(sourceManagedFamily, waterLevel)
-                    ?? ResolveVanillaStillBlockFromFluid(currentFluid, waterLevel)
-                    ?? ResolveVanillaStillBlockFromFluid(sourceFluid, waterLevel);
+                fillBlock = ResolveManagedWaterBlock(sourceManagedFamily, waterLevel, sourceFlowLetter)
+                    ?? ResolveVanillaWaterBlock(sourceManagedFamily, waterLevel, sourceFlowLetter)
+                    ?? ResolveVanillaWaterBlockFromFluid(currentFluid, waterLevel, sourceFlowLetter)
+                    ?? ResolveVanillaWaterBlockFromFluid(sourceFluid, waterLevel, sourceFlowLetter);
                 return fillBlock != null;
             }
 
             if (TryResolveVanillaFamily(sourceFluid, out string vanillaFamily))
             {
-                fillBlock = ResolveVanillaStillBlock(vanillaFamily, waterLevel);
+                fillBlock = ResolveVanillaWaterBlock(vanillaFamily, waterLevel, sourceFlowLetter);
                 return fillBlock != null;
             }
 
@@ -361,9 +363,9 @@ namespace HardcoreWater.Compat
             return result;
         }
 
-        private Block ResolveManagedStillBlock(string familyId, int level)
+        private Block ResolveManagedWaterBlock(string familyId, int level, char flowLetter)
         {
-            object[] args = { familyId, "still", Math.Clamp(level, 1, 7) };
+            object[] args = { familyId, flowLetter.ToString(), Math.Clamp(level, 1, 7) };
             try
             {
                 return getManagedBlock.Invoke(waterManager, args) as Block;
@@ -375,19 +377,20 @@ namespace HardcoreWater.Compat
             }
         }
 
-        private Block ResolveVanillaStillBlockFromFluid(Block fluid, int level)
+        private Block ResolveVanillaWaterBlockFromFluid(Block fluid, int level, char flowLetter)
         {
             if (TryResolveVanillaFamily(fluid, out string family))
             {
-                return ResolveVanillaStillBlock(family, level);
+                return ResolveVanillaWaterBlock(family, level, flowLetter);
             }
 
             return null;
         }
 
-        private Block ResolveVanillaStillBlock(string familyId, int level)
+        private Block ResolveVanillaWaterBlock(string familyId, int level, char flowLetter)
         {
-            AssetLocation code = new AssetLocation("game", $"{familyId}-still-{Math.Clamp(level, 1, 7)}");
+            AssetLocation code = new AssetLocation("game", $"{familyId}-{flowLetter}-{Math.Clamp(level, 1, 7)}");
+            Console.WriteLine("Resolving vanilla water block: " + code.ToShortString() + " with flow letter: " + flowLetter);
             return api.World.GetBlock(code);
         }
 

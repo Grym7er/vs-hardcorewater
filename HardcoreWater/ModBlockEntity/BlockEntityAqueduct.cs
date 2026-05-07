@@ -74,28 +74,6 @@ namespace HardcoreWater.ModBlockEntity
             return new List<string> { "ns", "sn", "we", "ew" };
         }
 
-        // Working
-        // -----------------------------
-        // notSourcingThis: True
-        // this.WaterSourcePos: 511990, 3, 511994
-        // sluice.WaterSourcePos: 511990, 3, 511995
-        // this.Pos: 511990, 3, 511993
-        // sluice.Pos: 511990, 3, 511994
-        // hasMinWater: True
-        // isValid: True
-        // -----------------------------
-
-        // Nonworking
-        // -----------------------------
-        // notSourcingThis: False
-        // this.WaterSourcePos: 
-        // sluice.WaterSourcePos: 
-        // this.Pos: 511990, 3, 511993
-        // sluice.Pos: 511990, 3, 511994
-        // hasMinWater: False
-        // isValid: False
-        // -----------------------------
-
         private bool IsValidFilledAqueduct(BlockPos blockPos)
         {
             
@@ -104,25 +82,7 @@ namespace HardcoreWater.ModBlockEntity
                 if (this.Api.World.BlockAccessor.GetBlockEntity<BlockEntityAqueductSluice>(blockPos) is BlockEntityAqueductSluice sluice)
                 {
                     if (!sluice.IsOpen) return false;
-                    // {
-                    //     if (this.WaterLevel == 0) return false;
-                    //     // To Do: Check if the water is coming in from the closed end, and invalidate accordingly
-                    //     BlockFacing closedFace = BlockFacing.FromFirstLetter(blockAqueduct.Orientation[0]);
-                    //     // Get the direction that the water is coming from
-                    //     BlockFacing watercomefromfacing = BlockFacing.HORIZONTALS.FirstOrDefault(f => this.Pos.AddCopy(f).Equals(this.WaterSourcePos));
-                    //     bool shouldReplaceFluid = watercomefromfacing == closedFace;
-                    //     // Let's lower the water level by replacing it with one that is one lower
-                    //     if (shouldReplaceFluid)
-                    //     {
-                    //         this.HasWaterSource = false;
-                    //         this.WaterSourcePos = null;
-                    //         this.CarriesRapids = false;
-                    //         this.WaterSourceReacquireTimeout = GetReacquireTimeoutTicks();
-                    //     }
-                    //     return false;
-                    // }
                     
-
                     string sluice_orientation = sluice.blockAqueduct.Orientation;
                     string my_orientation = this.blockAqueduct.Orientation;
 
@@ -374,7 +334,7 @@ namespace HardcoreWater.ModBlockEntity
         /// <summary>
         /// Horizontal flow letter for game:rapidwater-{letter}-{level}. Vertical/same-cell sources use stable downstream toward blockPosFB[1] (south for NS, east for WE).
         /// </summary>
-        private char ResolveFlowLetter(BlockPos waterSourcePos)
+        public char ResolveFlowLetter(BlockPos waterSourcePos)
         {
             bool trenchNs = BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation) == BlockFacing.NORTH;
             int ddx = this.Pos.X - waterSourcePos.X;
@@ -438,13 +398,15 @@ namespace HardcoreWater.ModBlockEntity
             else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "salt"))
             {
                 this.InvalidateRapidsChainProbeCache();
-                liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-still-" + Math.Min(7, this.WaterLevel)));
+                char flowdir = ResolveFlowLetter(this.WaterSourcePos);
+                liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:saltwater-" + flowdir + "-" + Math.Min(7, this.WaterLevel)));
                 this.CarriesRapids = false;
             }
             else if (ourBlockFluid != null && ourBlockFluid.Code != null && ourBlockFluid.Code.BeginsWith("game", "boiling"))
             {
                 this.InvalidateRapidsChainProbeCache();
-                liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-still-" + Math.Min(7, this.WaterLevel)));
+                char flowdir = ResolveFlowLetter(this.WaterSourcePos);
+                liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:boilingwater-" + flowdir + "-" + Math.Min(7, this.WaterLevel)));
                 this.CarriesRapids = false;
             }
             else
@@ -499,14 +461,16 @@ namespace HardcoreWater.ModBlockEntity
                     liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:rapidwater-" + flow + "-" + lvlStr));
                     if (liquidBlockToSet == null)
                     {
-                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + lvlStr));
+                        char flowdir = ResolveFlowLetter(this.WaterSourcePos);
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
                         this.CarriesRapids = false;
                         this.InvalidateRapidsChainProbeCache();
                     }
                 }
                 else
                 {
-                    liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-still-" + lvlStr));
+                    char flowdir = ResolveFlowLetter(this.WaterSourcePos);
+                    liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
                 }
             }
 
@@ -533,11 +497,11 @@ namespace HardcoreWater.ModBlockEntity
             // 1. Check the direction that the water is coming from.
             // 2. If the water is trying to flow from the closed end, don't replace the fluid.
             // 3. If the water is trying to flow from the open end, then replace the fluid.
-            BlockEntityAqueductSluice sluice = Api.World.BlockAccessor.GetBlockEntity(this.Pos) as BlockEntityAqueductSluice;
-            // if (this is BlockEntityAqueductSluice sluice)
-            if (sluice!=null)
+
+            if (this is BlockEntityAqueductSluice thisBlockEntityAqueductSluice)
+            // if (thisBlockEntityAqueductSluice!=null)
             {
-                if (!sluice.IsOpen)
+                if (!thisBlockEntityAqueductSluice.IsOpen)
                 {
                     BlockFacing closedFace = BlockFacing.FromFirstLetter(this.blockAqueduct.Orientation[0]);
                     // Get the direction that the water is coming from
@@ -552,6 +516,9 @@ namespace HardcoreWater.ModBlockEntity
             if (shouldReplaceFluid)
             {
 
+                Console.WriteLine("Setting block: " + liquidBlockToSet.Code.ToShortString() + " at pos: " + this.Pos + " in block type: " + this.Block.Code.ToShortString());
+                Console.WriteLine("Ourblock code: " + ourBlockFluid.Code.ToShortString());
+                Console.WriteLine("\n");
                 this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
                 if (!string.IsNullOrEmpty(ownerControllerId) &&
                     !string.IsNullOrEmpty(managedFamilyId) &&
@@ -755,11 +722,6 @@ namespace HardcoreWater.ModBlockEntity
                     {
                         if (IsValidWaterSource(endPos))
                         {
-                            // BlockAqueductSluice b = Api.World.BlockAccessor.GetBlock(endPos) as BlockAqueductSluice;
-                            // if (b != null)
-                            // {
-                            //     Console.WriteLine(b.Code.ToShortString() + " triggered IsValidWaterSource (728)");
-                            // }
                             this.WaterSourcePos = endPos;
                             this.WaterLevel = 6;
                             hasSource = true;
@@ -784,12 +746,7 @@ namespace HardcoreWater.ModBlockEntity
                         }
                         else if (IsValidFilledAqueduct(endPos))
                         {                            
-                            // DEBUG
-                            // BlockAqueductSluice b = Api.World.BlockAccessor.GetBlock(endPos) as BlockAqueductSluice;
-                            // if (b != null)
-                            // {
-                            //     Console.WriteLine(b.Code.ToShortString() + " triggered IsValidFilledAqueduct (760)");
-                            // }
+
                             this.WaterSourcePos = endPos;
                             this.WaterLevel = 6;
                             hasSource = true;
@@ -887,6 +844,7 @@ namespace HardcoreWater.ModBlockEntity
         }
 
 		private IAqueduct blockAqueduct;
+
         private float tickIntervalSeconds = 1f;
 
 		public int WaterLevel { get; set; } = 0;
