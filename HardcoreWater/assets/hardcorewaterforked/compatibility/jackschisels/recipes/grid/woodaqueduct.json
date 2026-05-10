@@ -3,10 +3,9 @@
   "ingredients": {
     "H": {
       "type": "item",
-      "code": "game:club-*",
+      "code": "game:club-generic-wood",
       "isTool": true,
-      "toolDurabilityCost": 20,
-      "allowedVariants": ["club-generic-wood"]
+      "toolDurabilityCost": 20
     },
     "C": {
       "type": "item",
