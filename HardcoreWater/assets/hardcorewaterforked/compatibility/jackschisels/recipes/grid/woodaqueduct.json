@@ -1,0 +1,35 @@
+{
+  "ingredientPattern": "HC,RL",
+  "ingredients": {
+    "H": {
+      "type": "item",
+      "code": "game:club-*",
+      "isTool": true,
+      "toolDurabilityCost": 20,
+      "allowedVariants": ["club-generic-wood"]
+    },
+    "C": {
+      "type": "item",
+      "code": "jackschisels:chiselstone-*",
+      "isTool": true,
+      "toolDurabilityCost": 10
+    },
+    "L": {
+      "type": "block",
+      "code": "game:debarkedlog-*-ud",
+      "name": "wood",
+      "quantity": 2
+    },
+    "R": {
+      "type": "item",
+      "code": "game:resin"
+    }
+  },
+  "width": 2,
+  "height": 2,
+  "output": {
+    "type": "block",
+    "code": "hardcorewaterforked:aqueduct-{wood}-none-ns",
+    "quantity": 2
+  }
+}
