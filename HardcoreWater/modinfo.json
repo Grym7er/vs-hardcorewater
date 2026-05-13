@@ -5,7 +5,7 @@
   "authors": [ "Grym7er" ],
   "contributors": [ "Zach2039", "C4BR3R4" ],
   "description": "Previously prevented buckets from placing source blocks, but now adds methods of water transportation for when source block moving is disabled in your worlds.",
-  "version": "1.4.2",
+  "version": "1.4.2-rc.1",
   "dependencies": {
   }
 }
