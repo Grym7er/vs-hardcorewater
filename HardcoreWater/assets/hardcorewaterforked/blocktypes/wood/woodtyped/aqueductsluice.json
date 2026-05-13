@@ -406,12 +406,12 @@
 	"texturesByType": {
 		"*-aged*": {
 			"sluice": {
-				"base": "game:block/wood/planks/aged/{wood}4"
+				"base": "game:block/wood/planks/aged/generic5"
 			}
 		},
 		"*-veryaged*": {
 			"sluice": {
-				"base": "game:block/wood/planks/aged/{wood}5"
+				"base": "game:block/wood/planks/aged/generic10"
 			}
 		}
 	},
