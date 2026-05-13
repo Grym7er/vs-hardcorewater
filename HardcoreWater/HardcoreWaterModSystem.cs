@@ -28,6 +28,7 @@ namespace HardcoreWater
         private ICoreAPI api;
         public Harmony harmonyInst;
         internal static ArchimedesCompatService ArchimedesCompat { get; private set; }
+        public static bool IsRealisticWaterActive { get; private set; } = false;
         private long compatRecoveryTickListenerId = -1;
         private int compatRecoveryAttempts = 0;
         private int compatSummaryAccumulatedMs = 0;
@@ -72,6 +73,14 @@ namespace HardcoreWater
             api.RegisterBlockEntityClass("BlockEntityAqueductSluice", typeof(BlockEntityAqueductSluice));
 
             api.Logger.Notification("Loaded Hardcore Water!");
+
+            IsRealisticWaterActive = api.ModLoader.IsModEnabled("realisticwater");
+            if (IsRealisticWaterActive)
+            {
+                api.Logger.Notification("Realistic Water detected, enabling realistic water compat");
+            }else{
+                api.Logger.Notification("Realistic Water not detected, disabling realistic water compat");
+            }
         }
 
         private void OnPlayerJoin(IServerPlayer player)
@@ -102,6 +111,13 @@ namespace HardcoreWater
                 PatchBlockBehaviorFiniteSpreadingLiquidFindDownwardPaths(sapi, harmonyInst);
 
                 PatchBlockBehaviorFiniteSpreadingLiquidUpdateOwnFlowDir(sapi, harmonyInst);
+
+                // patch realisticwater
+                if (IsRealisticWaterActive)
+                {
+                    PatchRealisticWater(sapi, harmonyInst);
+
+                }
             }
 
             sapi.Event.PlayerJoin += this.OnPlayerJoin;
@@ -293,6 +309,145 @@ namespace HardcoreWater
             harmony.Patch(original, new HarmonyMethod(prefix), null);
 
             sapi.Logger.Notification("Applied prefix to Vintage Story's BlockBehaviorFiniteSpreadingLiquid.updateOwnFlowDir from Hardcore Water!");
+        }
+
+        internal void PatchRealisticWater(ICoreServerAPI sapi, Harmony harmony)
+        {
+            // api.Logger.Notification("Patching Realistic Water: patching updateOwnFlowDir");
+
+            PatchBlockBehaviorRealisticSpreadingLiquidTryLoweringLiquidLevel(sapi, harmony);
+            PatchBlockBehaviorRealisticSpreadingLiquidCanSpreadIntoBlock(sapi, harmony);
+            PatchBlockBehaviorRealisticSpreadingLiquidFindDownwardPaths(sapi, harmony);
+            PatchBlockBehaviorRealisticSpreadingLiquidupdateOwnFlowDir(sapi, harmony);
+            
+            // PatchBlockBehaviorRealisticSpreadingLiquidSpreadAndUpdateLiquidLevels(sapi, harmony);
+            // PatchBlockBehaviorRealisticSpreadingCanSpreadIntoBlock(sapi, harmony);
+
+        }
+        internal void PatchBlockBehaviorRealisticSpreadingLiquidupdateOwnFlowDir(ICoreServerAPI sapi, Harmony harmony)
+        {
+            Type targetType = AccessTools.TypeByName("RealisticWater.BlockBehaviorRealisticSpreadingLiquid");
+            MethodInfo original = targetType.GetMethod(
+                "updateOwnFlowDir",
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                null,
+                new[] { typeof(Block), typeof(IWorldAccessor), typeof(BlockPos) },
+                null);
+
+            MethodInfo prefix = typeof(PatchBlockBehaviorRealisticSpreadingLiquid).GetMethod(
+                nameof(PatchBlockBehaviorRealisticSpreadingLiquid.PrefixupdateOwnFlowDir),
+                BindingFlags.NonPublic | BindingFlags.Static);
+
+            if (original == null || prefix == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked][realisticwater compat] Skipped patch for BlockRealistcSpreadingLiquid.updateOwnFlowDir. Method lookup failed for current game version.");
+                return;
+            }
+
+            harmony.Patch(original, new HarmonyMethod(prefix), null);
+
+            sapi.Logger.Notification("Applied prefix to Realistic Water's BlockBehaviorRealisticSpreadingLiquid.updateOwnFlowDir from Hardcore Water!");
+        }
+        internal void PatchBlockBehaviorRealisticSpreadingLiquidCanSpreadIntoBlock(ICoreServerAPI sapi, Harmony harmony)
+        {
+            Type targetType = AccessTools.TypeByName("RealisticWater.BlockBehaviorRealisticSpreadingLiquid");
+            MethodInfo original = targetType.GetMethod(
+                "CanSpreadIntoBlock",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public, 
+                null,
+                new[] {typeof(Block), typeof(Block), typeof(BlockPos), typeof(BlockPos), typeof(BlockFacing), typeof(IWorldAccessor)},
+                null);
+
+            MethodInfo prefix = typeof(PatchBlockBehaviorRealisticSpreadingLiquid).GetMethod(
+                nameof(PatchBlockBehaviorRealisticSpreadingLiquid.PrefixCanSpreadIntoBlock),
+                BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+
+            if (original == null || prefix == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked][realisticwater compat] Skipped patch for BlockRealisticSpreadingLiquid.CanSpreadIntoBlock. Method lookup failed for current game version.");
+                return;
+            }
+
+            harmony.Patch(original, new HarmonyMethod(prefix), null);
+
+            sapi.Logger.Notification("Applied prefix to Realistic Water's BlockBehaviorRealisticSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
+        }
+
+        internal bool SetupRWPosAndDist(ICoreServerAPI sapi)
+        {
+            Type PosAndDistType = AccessTools.TypeByName("RealisticWater.PosAndDist");
+
+            if (PosAndDistType == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped setup of RW PosAndDist. Type lookup failed for current game version.");
+                return false;
+            }
+
+            FieldInfo PatchPos = PosAndDistType.GetField("pos");
+            FieldInfo PatchDist = PosAndDistType.GetField("dist");
+
+            if (PatchPos == null || PatchDist == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped setup of RW PosAndDist. Field lookup failed for current game version.");
+                return false;
+            }
+            PatchBlockBehaviorRealisticSpreadingLiquid.SetupPosAndDistReflection(
+                                                                            PosAndDistType,
+                                                                            PatchPos,
+                                                                            PatchDist
+                                                                            );
+
+            return true;
+
+
+
+
+
+        }
+
+        internal void PatchBlockBehaviorRealisticSpreadingLiquidFindDownwardPaths(ICoreServerAPI sapi, Harmony harmony)
+        {
+            if (!SetupRWPosAndDist(sapi))
+            {
+                sapi.Logger.Warning("[hardcorewaterforked][realisticwater compat] Skipped patch for BlockBehaviorRealisticSpreadingLiquid.FindDownwardPaths. Setup of RW PosAndDist failed.");
+                return;
+            }
+
+            Type targetType = AccessTools.TypeByName("RealisticWater.BlockBehaviorRealisticSpreadingLiquid");
+            
+            MethodInfo original = targetType.GetMethod("FindDownwardPaths", BindingFlags.Public | BindingFlags.Instance, null, new Type[] {
+                    typeof(IWorldAccessor),  typeof(BlockPos), typeof(Block)
+                }, null);
+            MethodInfo postfix = typeof(PatchBlockBehaviorRealisticSpreadingLiquid).GetMethod("PostfixFindDownwardPaths", BindingFlags.NonPublic | BindingFlags.Static);
+
+            if (original == null || postfix == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped patch for BlockBehaviorRealisticSpreadingLiquid.FindDownwardPaths. Method lookup failed for current game version.");
+                return;
+            }
+
+            harmony.Patch(original, null, new HarmonyMethod(postfix));
+
+            sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorRealisticSpreadingLiquid.FindDownwardPaths from Hardcore Water!");
+        }
+        internal void PatchBlockBehaviorRealisticSpreadingLiquidTryLoweringLiquidLevel(ICoreServerAPI sapi, Harmony harmony)
+        {
+            Type targetType = AccessTools.TypeByName("RealisticWater.BlockBehaviorRealisticSpreadingLiquid");
+            
+            MethodInfo original = targetType.GetMethod("TryLoweringLiquidLevel", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] {
+                    typeof(Block), typeof(IWorldAccessor),  typeof(BlockPos)
+                }, null);
+            MethodInfo prefix = typeof(PatchBlockBehaviorRealisticSpreadingLiquid).GetMethod("PrefixTryLoweringLiquidLevel", BindingFlags.NonPublic | BindingFlags.Static);
+
+            if (original == null || prefix == null)
+            {
+                sapi.Logger.Warning("[hardcorewaterforked] Skipped patch for BlockBehaviorRealisticSpreadingLiquid.TryLoweringLiquidLevel. Method lookup failed for current game version.");
+                return;
+            }
+
+            harmony.Patch(original, new HarmonyMethod(prefix), null);
+
+            sapi.Logger.Notification("Applied patch to VintageStory's BlockBehaviorRealisticSpreadingLiquid.TryLoweringLiquidLevel from Hardcore Water!");
         }
     }
 }

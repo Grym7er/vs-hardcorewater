@@ -33,22 +33,6 @@ namespace HardcoreWater.ModBlockEntity
 
         }
 
-        // ToDo: Create a method that replace's the fluid in the sluice block with air, if:
-        // The sluice goes from open to closed.
-        // To water source is on the closed end.
-
-        private void ConditionallyReplaceFluidWithAir()
-        {
-            BlockFacing closedFace = BlockFacing.FromFirstLetter((this.Block as IAqueduct).Orientation[0]);
-            // Get the direction that the water is coming from
-            BlockFacing watercomefromfacing = BlockFacing.HORIZONTALS.FirstOrDefault(f => this.Pos.AddCopy(f).Equals(this.WaterSourcePos));
-            bool shouldReplaceFluid = watercomefromfacing == closedFace;
-            if (shouldReplaceFluid)
-            {
-                this.Api.World.BlockAccessor.SetBlock(0, this.Pos, BlockLayersAccess.Fluid);
-                this.Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(this.Pos);
-            }
-        }
 
         private void OpenSluice()
         {

@@ -462,7 +462,15 @@ namespace HardcoreWater.ModBlockEntity
                     if (liquidBlockToSet == null)
                     {
                         char flowdir = ResolveFlowLetter(this.WaterSourcePos);
-                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
+                        if (HardcoreWaterModSystem.IsRealisticWaterActive)
+                        {
+                            liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:realisticwater-" + flowdir + "-" + lvlStr + "-" + 19));
+                        }
+                        else
+                        {
+                            liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
+                        }
+                        // liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
                         this.CarriesRapids = false;
                         this.InvalidateRapidsChainProbeCache();
                     }
@@ -470,7 +478,15 @@ namespace HardcoreWater.ModBlockEntity
                 else
                 {
                     char flowdir = ResolveFlowLetter(this.WaterSourcePos);
-                    liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
+                    if (HardcoreWaterModSystem.IsRealisticWaterActive)
+                    {
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:realisticwater-" + flowdir + "-" + lvlStr + "-" + 19));
+                    }
+                    else
+                    {
+                        liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
+                    }
+                    // liquidBlockToSet = this.Api.World.GetBlock(new AssetLocation("game:water-" + flowdir + "-" + lvlStr));
                 }
             }
 
