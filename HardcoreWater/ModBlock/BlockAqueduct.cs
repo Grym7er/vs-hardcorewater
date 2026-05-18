@@ -16,13 +16,33 @@ namespace HardcoreWater.ModBlock
 
         public bool IsEnclosed => false;
 
-        public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
-		{
-			base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+        // public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
+		// {
+		// 	base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
 
-			// Ensure adjacent aqueducts get an update
-			world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
-		}
+        //     // Let's set the liquid at the position of the block to air:
+        //     // This helps with CollapseStory compat (no floating water in air)
+        //     // Also helps with general cleanup, I think?
+
+        //     world.BlockAccessor.SetBlock(0, pos, BlockLayersAccess.Fluid);
+
+		// 	// Ensure adjacent aqueducts get an update
+		// 	world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
+		// }
+
+        public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos)
+        {
+            // Doing the SetBlock and TriggerNeighbourBlockUpdate here instead of in OnBlockBroken
+            // because OnBlockRemoved should be called as aprt of OnBlockBroken, and the way that
+            // CollapseStory handles the collapse is by setting the block to air, so this
+            // OnBlockRemoved will trigger as a part of that, and thus prevent floating liquids.
+
+            base.OnBlockRemoved(world, pos);
+
+            world.BlockAccessor.SetBlock(0, pos, BlockLayersAccess.Fluid);
+            world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
+        }
+
 
         private string GetAqueductCodes(IWorldAccessor world, BlockPos pos, BlockFacing facing)
         {
