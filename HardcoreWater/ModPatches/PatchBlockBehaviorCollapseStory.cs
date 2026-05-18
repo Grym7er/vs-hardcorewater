@@ -16,13 +16,12 @@ namespace AdditionalSpawnConstraints.ModPatches
     public class PatchBlockBehaviorCollapseStory
     {
 
-        static Type CollapseStorySystem;
         static FieldInfo CollapseInProgress;
         static FieldInfo ChiselAggregateCache;
         static FieldInfo StressCache;
         static MethodInfo ChiselAggregateCache_Remove;
         static MethodInfo StressCache_Remove;
-        static Type ModSystemStructuralLoad;
+
 
 
 
@@ -72,10 +71,9 @@ namespace AdditionalSpawnConstraints.ModPatches
 
         }
 
-        internal static void SetupReflection(Type modSystemStructuralLoadType, Type collapseStorySystemType, FieldInfo collapseInProgressField, FieldInfo chiselAggregateCacheField, FieldInfo stressCacheField, MethodInfo chiselAggregateCache_RemoveMethod, MethodInfo stressCache_RemoveMethod)
+        internal static void SetupReflection(FieldInfo collapseInProgressField, FieldInfo chiselAggregateCacheField, FieldInfo stressCacheField, MethodInfo chiselAggregateCache_RemoveMethod, MethodInfo stressCache_RemoveMethod)
         {
-            ModSystemStructuralLoad = modSystemStructuralLoadType;
-            CollapseStorySystem = collapseStorySystemType;
+
             CollapseInProgress = collapseInProgressField;
             ChiselAggregateCache = chiselAggregateCacheField;
             StressCache = stressCacheField;

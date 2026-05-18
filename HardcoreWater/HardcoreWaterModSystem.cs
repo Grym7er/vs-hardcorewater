@@ -429,17 +429,16 @@ namespace HardcoreWater
 
             harmony.Patch(original, new HarmonyMethod(prefix), null);
 
-            sapi.Logger.Notification("Applied prefix to Realistic Water's BlockBehaviorRealisticSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
+            sapi.Logger.Notification("[hardcorewaterforked][collapse story compat] Applied prefix to Collapse Story's CollapseLayer from Hardcore Water!");
         }
 
         internal bool SetupCollapseStoryReflection(ICoreServerAPI sapi)
         {
-            Type ModSystemStructuralLoadType = AccessTools.TypeByName("CollapseStory.ModSystemStructuralLoad");
             Type CollapseStorySystemType = AccessTools.TypeByName("CollapseStory.CollapseStorySystem");
 
-            if (CollapseStorySystemType == null || ModSystemStructuralLoadType == null)
+            if (CollapseStorySystemType == null)
             {
-                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Field lookup failed: {0}, {1}", CollapseStorySystemType == null ? "CollapseStorySystemType is null" : "ok", ModSystemStructuralLoadType == null ? "ModSystemStructuralLoadType is null" : "ok");
+                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Field lookup failed: {0}", CollapseStorySystemType == null ? "CollapseStorySystemType is null" : "ok");
                 return false;
             }
 
@@ -470,7 +469,7 @@ namespace HardcoreWater
                 return false;
             }
 
-            PatchBlockBehaviorCollapseStory.SetupReflection(ModSystemStructuralLoadType, CollapseStorySystemType, CollapseInProgress, ChiselAggregateCache, StressCache, ChiselAggregateCache_Remove, StressCache_Remove);
+            PatchBlockBehaviorCollapseStory.SetupReflection(CollapseInProgress, ChiselAggregateCache, StressCache, ChiselAggregateCache_Remove, StressCache_Remove);
 
             return true;
         }
