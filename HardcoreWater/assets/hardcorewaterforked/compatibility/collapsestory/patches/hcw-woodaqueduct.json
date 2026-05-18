@@ -1,0 +1,34 @@
+[
+  {
+    "op": "addmerge",
+    "path": "/behaviors",
+    "file": "hardcorewaterforked:blocktypes/wood/woodtyped/aqueduct.json",
+    "side": "Server",
+    "value": [
+      {
+        "name": "StructuralLoad",
+        "properties": {
+          "fallSound": "game:effect/treefell",
+          "dustIntensity": 0.5,
+          "impactDamageMul": 3
+        }
+      }
+    ]
+  },
+  {
+    "op": "addmerge",
+    "path": "/behaviors",
+    "file": "hardcorewaterforked:blocktypes/wood/woodtyped/aqueductsluice.json",
+    "side": "Server",
+    "value": [
+      {
+        "name": "StructuralLoad",
+        "properties": {
+          "fallSound": "game:effect/treefell",
+          "dustIntensity": 0.5,
+          "impactDamageMul": 3
+        }
+      }
+    ]
+  }
+]

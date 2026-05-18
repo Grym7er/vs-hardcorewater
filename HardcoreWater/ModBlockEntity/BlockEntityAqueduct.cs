@@ -7,6 +7,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
+using Vintagestory.API.Common.Entities;
 
 namespace HardcoreWater.ModBlockEntity
 {
@@ -819,14 +820,20 @@ namespace HardcoreWater.ModBlockEntity
 
 		public override void Initialize(ICoreAPI api)
 		{
+
 			base.Initialize(api);
+
 			this.rapidsChainTerminalOutScratch = new BlockPos(Pos.dimension);
 			this.rapidsChainProbeCachedWaterSourcePos = new BlockPos(Pos.dimension);
 			this.rapidsChainProbeTerminalPos = new BlockPos(Pos.dimension);
 			this.blockAqueduct = (base.Block as IAqueduct);
             this.InvalidateRapidsChainProbeCache();
             this.tickIntervalSeconds = GameMath.Clamp(HardcoreWaterConfig.Loaded.AqueductUpdateFrequencySeconds, 0.1f, 10f);
-			this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int)Math.Round(this.tickIntervalSeconds * 1000), 0);
+            if (!Api.Side.IsServer())
+            {
+                return;
+            }
+            this.RegisterGameTickListener(new Action<float>(this.onServerTick1s), (int)Math.Round(this.tickIntervalSeconds * 1000), 0);
 		}
 
 		public override void ToTreeAttributes(ITreeAttribute tree)

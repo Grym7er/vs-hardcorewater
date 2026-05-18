@@ -1,0 +1,50 @@
+[
+  {
+    "op": "addmerge",
+    "path": "/behaviors",
+    "file": "hardcorewaterforked:blocktypes/stone/stonebrick/aqueduct.json",
+    "side": "Server",
+    "value": [
+      {
+        "name": "StructuralLoad",
+        "properties": {
+          "fallSound": "game:effect/rockslide",
+          "dustIntensity": 1,
+          "impactDamageMul": 7
+        }
+      }
+    ]
+  },
+  {
+    "op": "addmerge",
+    "path": "/behaviors",
+    "file": "hardcorewaterforked:blocktypes/stone/stonebrick/aqueductsluice.json",
+    "side": "Server",
+    "value": [
+      {
+        "name": "StructuralLoad",
+        "properties": {
+          "fallSound": "game:effect/rockslide",
+          "dustIntensity": 1,
+          "impactDamageMul": 7
+        }
+      }
+    ]
+  },
+  {
+    "op": "addmerge",
+    "path": "/behaviors",
+    "file": "hardcorewaterforked:blocktypes/stone/stonebrick/enclosedaqueduct.json",
+    "side": "Server",
+    "value": [
+      {
+        "name": "StructuralLoad",
+        "properties": {
+          "fallSound": "game:effect/rockslide",
+          "dustIntensity": 1,
+          "impactDamageMul": 7
+        }
+      }
+    ]
+  }
+]

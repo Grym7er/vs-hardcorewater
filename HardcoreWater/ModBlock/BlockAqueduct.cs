@@ -129,7 +129,7 @@ namespace HardcoreWater.ModBlock
 
         public override string GetPlacedBlockInfo(IWorldAccessor world, BlockPos pos, IPlayer forPlayer)
 		{
-            return AqueductDebugInfo.Build(this.api, this, world, pos);
+            return base.GetPlacedBlockInfo(world, pos, forPlayer) + AqueductDebugInfo.Build(this.api, this, world, pos);
         }
 	}
 }
