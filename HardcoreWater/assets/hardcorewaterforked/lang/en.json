@@ -17,6 +17,8 @@
   "block-aqueduct-sandstone*": "Sandstone aqueduct section",
   "block-aqueduct-shale*": "Shale aqueduct section",
   "block-aqueduct-slate*": "Slate aqueduct section",
+  "block-aqueduct-travertine*": "Travertine aqueduct section",
+  "block-aqueduct-suevite*": "Suevite aqueduct section",
 
   "block-aqueductsluice-andesite*": "Andesite aqueduct sluice",
   "block-aqueductsluice-basalt*": "Basalt aqueduct sluice",
@@ -32,6 +34,8 @@
   "block-aqueductsluice-sandstone*": "Sandstone aqueduct sluice",
   "block-aqueductsluice-shale*": "Shale aqueduct sluice",
   "block-aqueductsluice-slate*": "Slate aqueduct sluice",
+  "block-aqueductsluice-travertine*": "Travertine aqueduct sluice",
+  "block-aqueductsluice-suevite*": "Suevite aqueduct sluice",
 
   "block-aqueductsluice-acacia*": "Acacia aqueduct sluice",
   "block-aqueductsluice-baldcypress*": "Bald cypress aqueduct sluice",
@@ -84,5 +88,7 @@
   "block-enclosedaqueduct-phyllite*": "Phyllite enclosed aqueduct section",
   "block-enclosedaqueduct-sandstone*": "Sandstone enclosed aqueduct section",
   "block-enclosedaqueduct-shale*": "Shale enclosed aqueduct section",
-  "block-enclosedaqueduct-slate*": "Slate enclosed aqueduct section"
+  "block-enclosedaqueduct-slate*": "Slate enclosed aqueduct section",
+  "block-enclosedaqueduct-travertine*": "Travertine enclosed aqueduct section",
+  "block-enclosedaqueduct-suevite*": "Suevite enclosed aqueduct section"
 }
