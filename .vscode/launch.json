@@ -17,8 +17,8 @@
             },
             "preLaunchTask": "build",
             "args": [
-                // "--playStyle" , "preset-surviveandbuild",
-                // "--openWorld" , "modding test world",
+                "--playStyle" , "preset-surviveandbuild",
+                "--openWorld" , "modding test world",
                 "--tracelog",
                 "--addModPath",
                 "${workspaceFolder}/HardcoreWater/bin/Debug/Mods"
