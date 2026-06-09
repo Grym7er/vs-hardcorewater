@@ -6,34 +6,21 @@ using Vintagestory.API.Server;
 using HardcoreWater.ModNetwork;
 using HardcoreWater.ModBlock;
 using HardcoreWater.ModBlockEntity;
-using HardcoreWater.Compat;
 using HarmonyLib;
 using AdditionalSpawnConstraints.ModPatches;
 using Vintagestory.GameContent;
 using System;
 using System.Reflection;
 using Vintagestory.API.MathTools;
-using System.Collections.Generic;
 
 namespace HardcoreWater
 {
     public class HardcoreWaterModSystem : ModSystem
     {
-        private const string ArchimedesPrimaryModId = "thetruearchimedesscrew";
-        private const string ArchimedesLegacyModId = "archimedes_screw";
-        private const int CompatRecoveryTickMs = 30000;
-        private const int CompatSummaryTickMs = 180000;
-        private const int MaxCompatRecoveryAttempts = 10;
-
         private IServerNetworkChannel serverChannel;
         private ICoreAPI api;
         public Harmony harmonyInst;
-        internal static ArchimedesCompatService ArchimedesCompat { get; private set; }
         public static bool IsRealisticWaterActive { get; private set; } = false;
-        public static bool IsCollapseStoryActive { get; private set; } = false;
-        private long compatRecoveryTickListenerId = -1;
-        private int compatRecoveryAttempts = 0;
-        private int compatSummaryAccumulatedMs = 0;
 
         public override void StartPre(ICoreAPI api)
         {
@@ -77,13 +64,6 @@ namespace HardcoreWater
             api.Logger.Notification("Loaded Hardcore Water!");
 
             IsRealisticWaterActive = api.ModLoader.IsModEnabled("realisticwater");
-            IsCollapseStoryActive = api.ModLoader.IsModEnabled("collapsestory");
-            if (IsCollapseStoryActive)
-            {
-                api.Logger.Notification("Collapse Story detected, enabling collapse story compat");
-            }else{
-                api.Logger.Notification("Collapse Story not detected, disabling collapse story compat");
-            }
             if (IsRealisticWaterActive)
             {
                 api.Logger.Notification("Realistic Water detected, enabling realistic water compat");
@@ -127,18 +107,9 @@ namespace HardcoreWater
                     PatchRealisticWater(sapi, harmonyInst);
 
                 }
-
-                // patch collapse story
-                if (IsCollapseStoryActive)
-                {
-                    PatchCollapseStory(sapi, harmonyInst);
-                }
             }
 
             sapi.Event.PlayerJoin += this.OnPlayerJoin;
-            sapi.Event.SaveGameLoaded += this.OnSaveGameLoaded;
-            compatRecoveryTickListenerId = sapi.Event.RegisterGameTickListener(OnCompatRecoveryTick, CompatRecoveryTickMs);
-
             base.StartServerSide(sapi);
         }
 
@@ -159,92 +130,12 @@ namespace HardcoreWater
             if (this.api is ICoreServerAPI sapi)
             {
                 sapi.Event.PlayerJoin -= this.OnPlayerJoin;
-                sapi.Event.SaveGameLoaded -= this.OnSaveGameLoaded;
-                if (compatRecoveryTickListenerId >= 0)
-                {
-                    sapi.Event.UnregisterGameTickListener(compatRecoveryTickListenerId);
-                    compatRecoveryTickListenerId = -1;
-                }
             }
 
             harmonyInst?.UnpatchAll(Mod.Info.ModID);
             harmonyInst = null;
-            ArchimedesCompat = null;
         }
 
-        private void TryInitializeArchimedesCompat(ICoreServerAPI sapi)
-        {
-            bool installed = sapi.ModLoader.IsModEnabled(ArchimedesPrimaryModId) || sapi.ModLoader.IsModEnabled(ArchimedesLegacyModId);
-            if (!installed)
-            {
-                ArchimedesCompat = null;
-                return;
-            }
-
-            ArchimedesCompatService created = ArchimedesCompatService.Create(sapi);
-            if (created != null)
-            {
-                ArchimedesCompat = created;
-                compatRecoveryAttempts = 0;
-                return;
-            }
-
-            if (ArchimedesCompat?.IsActive == true)
-            {
-                return;
-            }
-        }
-
-        private void OnSaveGameLoaded()
-        {
-            if (this.api is not ICoreServerAPI sapi)
-            {
-                return;
-            }
-
-            // Align with waterfall-compat style: re-resolve once when game state is fully loaded.
-            if (ArchimedesCompat == null)
-            {
-                TryInitializeArchimedesCompat(sapi);
-            }
-
-            ArchimedesCompat?.Refresh();
-            ArchimedesCompat?.LogDebugSummaryIfNeeded();
-        }
-
-        private void OnCompatRecoveryTick(float dt)
-        {
-            if (this.api is not ICoreServerAPI sapi)
-            {
-                return;
-            }
-
-            bool installed = sapi.ModLoader.IsModEnabled(ArchimedesPrimaryModId) || sapi.ModLoader.IsModEnabled(ArchimedesLegacyModId);
-            if (!installed)
-            {
-                return;
-            }
-
-            if (ArchimedesCompat == null)
-            {
-                if (compatRecoveryAttempts >= MaxCompatRecoveryAttempts)
-                {
-                    return;
-                }
-
-                compatRecoveryAttempts++;
-                TryInitializeArchimedesCompat(sapi);
-                return;
-            }
-
-            ArchimedesCompat.Refresh();
-            compatSummaryAccumulatedMs += CompatRecoveryTickMs;
-            if (compatSummaryAccumulatedMs >= CompatSummaryTickMs)
-            {
-                ArchimedesCompat.LogDebugSummaryIfNeeded();
-                compatSummaryAccumulatedMs = 0;
-            }
-        }
 
         internal void PatchBlockBehaviorFiniteSpreadingLiquidTryLoweringLiquidLevel(ICoreServerAPI sapi, Harmony harmony)
 		{
@@ -339,11 +230,6 @@ namespace HardcoreWater
             // PatchBlockBehaviorRealisticSpreadingCanSpreadIntoBlock(sapi, harmony);
 
         }
-
-        internal void PatchCollapseStory(ICoreServerAPI sapi, Harmony harmony)
-        {
-            PatchBlockBehaviorCollapseStoryCollapseLayer(sapi, harmony);
-        }
         internal void PatchBlockBehaviorRealisticSpreadingLiquidupdateOwnFlowDir(ICoreServerAPI sapi, Harmony harmony)
         {
             Type targetType = AccessTools.TypeByName("RealisticWater.BlockBehaviorRealisticSpreadingLiquid");
@@ -391,87 +277,6 @@ namespace HardcoreWater
             harmony.Patch(original, new HarmonyMethod(prefix), null);
 
             sapi.Logger.Notification("Applied prefix to Realistic Water's BlockBehaviorRealisticSpreadingLiquid.CanSpreadIntoBlock from Hardcore Water!");
-        }
-
-        internal void PatchBlockBehaviorCollapseStoryCollapseLayer(ICoreServerAPI sapi, Harmony harmony)
-        {
-            if (!SetupCollapseStoryReflection(sapi))
-            {
-                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Skipped patch for BlockCollapseStory.CollapseLayer. Setup of CollapseStory reflection failed.");
-                return;
-            }
-
-            Type targetType = AccessTools.TypeByName("CollapseStory.ModSystemStructuralLoad");
-            Type BlockBehaviorStructuralLoadType = AccessTools.TypeByName("CollapseStory.BlockBehaviorStructuralLoad");
-
-            if (targetType == null || BlockBehaviorStructuralLoadType == null)
-            {
-                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Field lookup failed: {0}, {1}", targetType == null ? "targetType is null" : "ok", BlockBehaviorStructuralLoadType == null ? "BlockBehaviorStructuralLoadType is null" : "ok");
-                return;
-            }
-
-            MethodInfo original = targetType.GetMethod(
-                "CollapseLayer",
-                BindingFlags.NonPublic | BindingFlags.Instance,
-                null,
-                new[] {typeof(IWorldAccessor), typeof(List<BlockPos>), typeof(HashSet<BlockPos>), typeof(int), BlockBehaviorStructuralLoadType},
-                null);
-
-            MethodInfo prefix = typeof(PatchBlockBehaviorCollapseStory).GetMethod(
-                nameof(PatchBlockBehaviorCollapseStory.PrefixCollapseLayer),
-                BindingFlags.NonPublic | BindingFlags.Static);
-
-            if (original == null || prefix == null)
-            {
-                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Skipped patch for BlockCollapseStory.CollapseLayer: {0}, {1}", original == null ? "original is null" : "ok", prefix == null ? "prefix is null" : "ok");
-                return;
-            }
-
-            harmony.Patch(original, new HarmonyMethod(prefix), null);
-
-            sapi.Logger.Notification("[hardcorewaterforked][collapse story compat] Applied prefix to Collapse Story's CollapseLayer from Hardcore Water!");
-        }
-
-        internal bool SetupCollapseStoryReflection(ICoreServerAPI sapi)
-        {
-            Type CollapseStorySystemType = AccessTools.TypeByName("CollapseStory.CollapseStorySystem");
-
-            if (CollapseStorySystemType == null)
-            {
-                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Field lookup failed: {0}", CollapseStorySystemType == null ? "CollapseStorySystemType is null" : "ok");
-                return false;
-            }
-
-            FieldInfo CollapseInProgress = CollapseStorySystemType.GetField("CollapseInProgress");
-            FieldInfo ChiselAggregateCache = CollapseStorySystemType.GetField("ChiselAggregateCache");
-            FieldInfo StressCache = CollapseStorySystemType.GetField("StressCache");
-
-            if (CollapseInProgress == null || ChiselAggregateCache == null || StressCache == null)
-            {
-                sapi.Logger.Warning(
-                    "[hardcorewaterforked][collapse story compat] Field lookup failed. CollapseInProgress={0}, ChiselAggregateCache={1}, StressCache={2}",
-                    CollapseInProgress == null ? "null" : "ok",
-                    ChiselAggregateCache == null ? "null" : "ok",
-                    StressCache == null ? "null" : "ok"
-                );
-                return false;
-            }
-
-            object chiselCacheobj = ChiselAggregateCache.GetValue(null);
-            object stressCacheobj = StressCache.GetValue(null);
-
-            MethodInfo ChiselAggregateCache_Remove = AccessTools.Method(chiselCacheobj.GetType(), "Remove", new[] {typeof(BlockPos)});
-            MethodInfo StressCache_Remove = AccessTools.Method(stressCacheobj.GetType(), "Remove", new[] {typeof(BlockPos)});
-
-            if (CollapseInProgress == null || ChiselAggregateCache == null || StressCache == null || ChiselAggregateCache_Remove == null || StressCache_Remove == null)
-            {
-                sapi.Logger.Warning("[hardcorewaterforked][collapse story compat] Skipped setup of CollapseStory reflection. Field or method lookup failed for current game version.");
-                return false;
-            }
-
-            PatchBlockBehaviorCollapseStory.SetupReflection(CollapseInProgress, ChiselAggregateCache, StressCache, ChiselAggregateCache_Remove, StressCache_Remove);
-
-            return true;
         }
 
         internal bool SetupRWPosAndDist(ICoreServerAPI sapi)

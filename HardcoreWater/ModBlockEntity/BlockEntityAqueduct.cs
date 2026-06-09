@@ -38,11 +38,6 @@ namespace HardcoreWater.ModBlockEntity
                 return blockWater.LiquidLevel >= minLevel;
 			}
 
-            if (HardcoreWaterModSystem.ArchimedesCompat != null &&
-                HardcoreWaterModSystem.ArchimedesCompat.IsManagedSourceBlock(block))
-            {
-                return block.LiquidLevel >= minLevel;
-            }
 
             return false;
 		}
@@ -210,16 +205,6 @@ namespace HardcoreWater.ModBlockEntity
             string managedFamilyId = null;
             Block compatBlock = null;
             bool compatResolved = false;
-            if (HardcoreWaterModSystem.ArchimedesCompat != null)
-            {
-                compatResolved = HardcoreWaterModSystem.ArchimedesCompat.TryResolveAqueductFill(
-                    this,
-                    ourBlockFluid,
-                    Math.Min(7, this.WaterLevel),
-                    out compatBlock,
-                    out ownerControllerId,
-                    out managedFamilyId);
-            }
 
             if (compatResolved && compatBlock != null)
             {
@@ -343,17 +328,6 @@ namespace HardcoreWater.ModBlockEntity
                 // Console.WriteLine("Ourblock code: " + ourBlockFluid.Code.ToShortString());
                 // Console.WriteLine("\n");
                 this.Api.World.BlockAccessor.SetBlock(liquidBlockToSet.BlockId, this.Pos, BlockLayersAccess.Fluid);
-                if (!string.IsNullOrEmpty(ownerControllerId) &&
-                    !string.IsNullOrEmpty(managedFamilyId) &&
-                    HardcoreWaterModSystem.ArchimedesCompat != null)
-                {
-                    HardcoreWaterModSystem.ArchimedesCompat.TryAssignOutletOwnership(
-                        this,
-                        new[] { this.Pos, blockPosFB[0], blockPosFB[1] },
-                        ownerControllerId,
-                        managedFamilyId
-                    );
-                }
 
                 shouldTriggerNeighborUpdate = true;
                 shouldMarkDirty = true;
